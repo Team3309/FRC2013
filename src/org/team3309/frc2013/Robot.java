@@ -6,6 +6,7 @@
 /*----------------------------------------------------------------------------*/
 package org.team3309.frc2013;
 
+import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 /**
@@ -21,6 +22,7 @@ public class Robot extends IterativeRobot {
     private Shooter mShooter;
     private XboxController driveXbox = new XboxController(1);
     private XboxController operatorXbox = new XboxController(2);
+    private Compressor compressor = new Compressor(RobotMap.PRESSURE_SWITCH, RobotMap.COMPRESSOR_RELAY);
 
     /**
      * This function is run when the robot is first started up and should be
@@ -35,6 +37,7 @@ public class Robot extends IterativeRobot {
                 .build();
 
         mShooter = new Shooter(RobotMap.SHOOTER_MOTOR, RobotMap.SHOOTER_PISTON_FORWARD, RobotMap.SHOOTER_PISTON_REVERSE, 0);
+        compressor.start();
     }
 
     /**

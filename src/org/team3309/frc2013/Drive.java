@@ -5,6 +5,7 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.Victor;
 
 /**
@@ -69,7 +70,7 @@ public class Drive {
     private DoubleSolenoid driveShifter = null;
     private DoubleSolenoid ptoShifter = null;
     
-    private double gain = 1;
+    private double gain = .5;
 
     double skim(double v) {
         // gain determines how much to skim off the top
@@ -82,6 +83,8 @@ public class Drive {
     }
 
     public void drive(double throttle, double turn) {
+        turn = -turn;
+        
         double t_left = throttle + turn;
         double t_right = throttle - turn;
 
@@ -89,6 +92,7 @@ public class Drive {
         double right = t_right + skim(t_left);
 
         left = -left;
+        System.out.println("left: "+left+"\t right:"+right);
 
         left1.set(left);
         left2.set(left);

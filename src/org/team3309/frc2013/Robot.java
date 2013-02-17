@@ -22,7 +22,7 @@ public class Robot extends IterativeRobot {
     private Shooter mShooter;
     private XboxController driveXbox = new XboxController(1);
     private XboxController operatorXbox = new XboxController(2);
-    private Compressor compressor = new Compressor(RobotMap.PRESSURE_SWITCH, RobotMap.COMPRESSOR_RELAY);
+    //private Compressor compressor = new Compressor(RobotMap.PRESSURE_SWITCH, RobotMap.COMPRESSOR_RELAY);
 
     /**
      * This function is run when the robot is first started up and should be
@@ -37,7 +37,7 @@ public class Robot extends IterativeRobot {
                 .build();
 
         mShooter = new Shooter(RobotMap.SHOOTER_MOTOR, RobotMap.SHOOTER_PISTON_FORWARD, RobotMap.SHOOTER_PISTON_REVERSE, 0);
-        compressor.start();
+        //compressor.start();
     }
 
     /**
@@ -56,8 +56,9 @@ public class Robot extends IterativeRobot {
             mDrive.highGear();
         }
 
-        double throttle = driveXbox.getLeftY();
-        double turn = driveXbox.getRightX();
+        double throttle = Math.abs(driveXbox.getLeftY())*driveXbox.getLeftY();
+        double turn = Math.abs(driveXbox.getRightX())*driveXbox.getRightX();
+        //System.out.println("throttle: "+throttle+"\t turn:"+turn);
         mDrive.drive(throttle, turn);
 
         mShooter.setPercent(operatorXbox.getLeftY());

@@ -20,17 +20,17 @@ public class XboxController {
     private static final int B_D_PAD_DOWN = 6;
     private static final int B_D_PAD_LEFT = 7;
     private static final int B_D_PAD_RIGHT = 8;
-    private static final int B_START = 9;
-    private static final int B_BACK = 10;
-    private static final int B_LEFT_STICK = 11;
-    private static final int B_RIGHT_STICK = 12;
-    private static final int B_LEFT_BUMPER = 13;
-    private static final int B_RIGHT_BUMPER = 14;
+    private static final int B_START = 8;
+    private static final int B_BACK = 7;
+    private static final int B_LEFT_STICK = 9;
+    private static final int B_RIGHT_STICK = 10;
+    private static final int B_LEFT_BUMPER = 5;
+    private static final int B_RIGHT_BUMPER = 6;
     private static final int B_X_HOME = 15;
-    private static final int B_A = 16;
-    private static final int B_B = 17;
-    private static final int B_X = 18;
-    private static final int B_Y = 19;
+    private static final int B_A = 1;
+    private static final int B_B = 2;
+    private static final int B_X = 3;
+    private static final int B_Y = 4;
     // Axis
     private static final int A_LEFT_X = 1;
     private static final int A_LEFT_Y = 2;

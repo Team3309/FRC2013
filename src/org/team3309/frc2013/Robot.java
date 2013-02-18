@@ -34,6 +34,8 @@ public class Robot extends IterativeRobot {
                 .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
                 .driveShifter(RobotMap.DRIVE_SHIFTER_LEFT_FORWARD, RobotMap.DRIVE_SHIFTER_LEFT_REVERSE)
                 .ptoShifter(RobotMap.DRIVE_SHIFTER_PTO_FORWARD, RobotMap.DRIVE_SHIFTER_PTO_REVERSE)
+                .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
+                .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A, RobotMap.DRIVE_ENCODER_RIGHT_B)
                 .build();
 
         mShooter = new Shooter(RobotMap.SHOOTER_MOTOR, RobotMap.SHOOTER_PISTON_FORWARD, RobotMap.SHOOTER_PISTON_REVERSE, 0);

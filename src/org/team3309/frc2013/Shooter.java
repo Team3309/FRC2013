@@ -16,18 +16,32 @@ import edu.wpi.first.wpilibj.Victor;
 public class Shooter {
 
     private Victor motor = null;
-    private DoubleSolenoid piston = null;
+    private DoubleSolenoid loaderPiston = null;
+    private DoubleSolenoid tilterPiston = null;
     private Counter cntr = null;
 
-    public Shooter(int motorChannel, int pistonForward, int pistonBackward, int encoder) {
+    public Shooter(int motorChannel, int loaderForward, int loaderBackward, int tilterForward, int tilterReverse, int encoder) {
         motor = new Victor(motorChannel);
-        piston = new DoubleSolenoid(pistonForward, pistonBackward);
+        loaderPiston = new DoubleSolenoid(loaderForward, loaderBackward);
+        tilterPiston = new DoubleSolenoid(2, tilterForward, tilterReverse);
+        //cntr = new Counter(encoder);
+        //cntr.setSemiPeriodMode(true);
     }
 
-    public void shoot() {
-        piston.set(DoubleSolenoid.Value.kForward);
-        Timer.delay(.5);
-        piston.set(DoubleSolenoid.Value.kReverse);
+    public void extendLoader() {
+        loaderPiston.set(DoubleSolenoid.Value.kForward);
+    }
+    
+    public void retractLoader(){
+        loaderPiston.set(DoubleSolenoid.Value.kReverse);
+    }
+    
+    public void tiltUp(){
+        tilterPiston.set(DoubleSolenoid.Value.kForward);
+    }
+    
+    public void tiltDown(){
+        tilterPiston.set(DoubleSolenoid.Value.kReverse);
     }
 
     public void setPercent(double perc) {

@@ -11,6 +11,8 @@ import edu.wpi.first.wpilibj.Joystick;
  * @author friarbots
  */
 public class XboxController {
+    
+    private static final double DEADBAND = .1;
 
     /*
      * Xbox 360 Controller Mapping - Vincente
@@ -36,8 +38,9 @@ public class XboxController {
     private static final int A_LEFT_Y = 2;
     private static final int A_LEFT_TRIGGER = 3;
     private static final int A_RIGHT_TRIGGER = 4;
-    private static final int A_RIGHT_X = 4;//5;
+    private static final int A_RIGHT_X = 4;
     private static final int A_RIGHT_Y = 6;
+    
     private Joystick mController;
 
     public XboxController(int controller) {
@@ -106,7 +109,7 @@ public class XboxController {
 
     public double getLeftX() {
         double val = mController.getRawAxis(A_LEFT_X);
-        if (Math.abs(val) < .05) {
+        if (Math.abs(val) < DEADBAND) {
             return 0;
         }
         return val;
@@ -114,7 +117,7 @@ public class XboxController {
 
     public double getLeftY() {
         double val = mController.getRawAxis(A_LEFT_Y);
-        if (Math.abs(val) < .05) {
+        if (Math.abs(val) < DEADBAND) {
             return 0;
         }
         return val;
@@ -126,7 +129,7 @@ public class XboxController {
 
     public double getRightX() {
         double val = mController.getRawAxis(A_RIGHT_X);
-        if (Math.abs(val) < .05) {
+        if (Math.abs(val) < DEADBAND) {
             return 0;
         }
         return val;
@@ -134,7 +137,7 @@ public class XboxController {
 
     public double getRightY() {
         double val = mController.getRawAxis(A_RIGHT_Y);
-        if (Math.abs(val) < .05) {
+        if (Math.abs(val) < DEADBAND) {
             return 0;
         }
         return val;

@@ -57,6 +57,7 @@ public class Shooter implements Runnable{
     public void setTargetRpm(double rpm){
         //pid.setSetpoint(rpm / MAX_RPM);
         targetRpm = rpm;
+        SmartDashboard.putNumber("shooter target", rpm);
     }
     
     int infinityCounts = 0;
@@ -66,19 +67,19 @@ public class Shooter implements Runnable{
             try {
                 double period = cntr.getPeriod();
                 speed = 60 / period;
-                
                 // do this so that we use the last speed if the loop is running too fast and didn't get a period
                 if(period == Double.POSITIVE_INFINITY && infinityCounts <= 10){
                     speed = lastSpeed;
                     infinityCounts++;
                 }
-                else if(infinityCounts > 10)
+                else if(period == Double.POSITIVE_INFINITY && infinityCounts > 10){
                     speed = 0;
+                    infinityCounts++;
+                }
                 else{
                     infinityCounts = 0;
                 }
                 
-                //speed = FILTER_STRENGTH * lastSpeed + (1 - FILTER_STRENGTH) * speed;
                 lastSpeed = speed;
                 
                 if(speed < targetRpm)

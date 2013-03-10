@@ -8,7 +8,8 @@ package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import org.team3309.frc2013.commands.AutoShootCommand;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as described in the IterativeRobot documentation. If you change the name of this class or
@@ -16,27 +17,28 @@ import edu.wpi.first.wpilibj.Joystick;
  */
 public class Robot extends IterativeRobot {
 
-    private Drive mDrive;
-    private Shooter mShooter;
+    private Drive mDrive = null;
+    private Climber mClimber = null;
+    private Shooter mShooter = null;
+    
     private XboxController driveXbox = new XboxController(1);
-    private Joystick operatorXbox = new Joystick(2);
-    private Compressor compressor = new Compressor(RobotMap.PRESSURE_SWITCH, RobotMap.COMPRESSOR_RELAY);
+    private XboxController operatorXbox = new XboxController(2);
+    private Compressor compressor = null;
+    
+    private AutoShootCommand teleopAutoShoot = new AutoShootCommand(4);
+    private AutoShootCommand autonAutoShoot = new AutoShootCommand(3);
 
     /**
      * This function is run when the robot is first started up and should be used for any initialization code.
      */
     public void robotInit() {
-        mDrive = new Drive.Builder()
-                .left1(RobotMap.DRIVE_LEFT_1).left2(RobotMap.DRIVE_LEFT_2)
-                .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
-                .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
-                .ptoShifter(RobotMap.DRIVE_SHIFTER_PTO_FORWARD, RobotMap.DRIVE_SHIFTER_PTO_REVERSE)
-                .thirdPosShifter(RobotMap.DRIVE_SHIFTER_THIRD_POS)
-                .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A)
-                .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
-                .build();
+        mDrive = Drive.getInstance();
 
-        mShooter = new Shooter(RobotMap.SHOOTER_MOTOR, RobotMap.SHOOTER_LOADER_FORWARD, RobotMap.SHOOTER_LOADER_REVERSE, RobotMap.SHOOTER_TILTER_FORWARD, RobotMap.SHOOTER_TILTER_REVERSE, 0);
+        mShooter = Shooter.getInstance();
+        
+        mClimber = Climber.getInstance();
+        
+        compressor = new Compressor(RobotMap.PRESSURE_SWITCH, RobotMap.COMPRESSOR_RELAY);
         compressor.start();
     }
 
@@ -46,6 +48,12 @@ public class Robot extends IterativeRobot {
     public void autonomousPeriodic() {
     }
 
+    
+    public void teleopInit(){
+        JoystickButton autoShootButton = new JoystickButton(operatorXbox, XboxController.BUTTON_X);
+        autoShootButton.whenPressed(teleopAutoShoot);
+    }
+    
     /**
      * This function is called periodically during operator control
      */
@@ -57,41 +65,54 @@ public class Robot extends IterativeRobot {
             System.out.println("Shifting to high gear");
             mDrive.highGear();
         }
-        else if(driveXbox.getA()){
+        else if(driveXbox.getAButton()){
             System.out.println("Shifting to PTO");
             mDrive.engagePto();
         }
-        else if(driveXbox.getB()){
+        else if(driveXbox.getBButton()){
             System.out.println("Shifting out of PTO");
             mDrive.disengagePto();
         }
 
         double throttle = Math.abs(driveXbox.getLeftY()) * driveXbox.getLeftY();
         double turn = Math.abs(driveXbox.getRightX()) * driveXbox.getRightX();
-        //System.out.println("throttle: "+throttle+"\t turn:"+turn);
         mDrive.drive(throttle, turn);
         //mDrive.setRightRpm(-500);
 
-        mShooter.setPercent(-operatorXbox.getY());
-        if (operatorXbox.getTrigger()) {
+        double target = -operatorXbox.getLeftY();
+        if(Math.abs(target) < .1)
+            target = 0;
+        target *= Shooter.MAX_RPM;
+        
+        if(operatorXbox.getYButton())
+            target = 4200;
+        mShooter.setTargetRpm(target);
+        if(target > 2000)
+            compressor.stop();
+        else
+            compressor.start();
+        
+        //mShooter.setPercent(target);
+        if (operatorXbox.getRightBumper()) {
             //System.out.println("extending loader");
             mShooter.extendLoader();
         }
-        else if(!operatorXbox.getTrigger()){
+        else if(operatorXbox.getLeftBumper()){
             //System.out.println("retracting loader");
             mShooter.retractLoader();
         }
-        /*else if(operatorXbox.getRightBumper()){
-            System.out.println("retracting loader");
-            mShooter.retractLoader();
-        }*/
-        if (operatorXbox.getRawButton(6)) {
+        if (operatorXbox.getBButton()) {
             //System.out.println("tilting up");
             mShooter.tiltUp();
-        } else if (operatorXbox.getRawButton(7)) {
+        } else if (operatorXbox.getAButton()) {
             //System.out.println("tilting down");
             mShooter.tiltDown();
         }
+        
+        if(driveXbox.getXButton())
+            mClimber.tip();
+        else if(driveXbox.getYButton())
+            mClimber.retractTipper();
     }
 
     /**

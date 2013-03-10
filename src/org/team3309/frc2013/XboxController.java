@@ -4,13 +4,14 @@
  */
 package org.team3309.frc2013;
 
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 
 /**
  *
  * @author friarbots
  */
-public class XboxController {
+public class XboxController extends GenericHID{
     
     private static final double DEADBAND = .1;
 
@@ -18,21 +19,22 @@ public class XboxController {
      * Xbox 360 Controller Mapping - Vincente
      */
     // Buttons
-    private static final int B_D_PAD_UP = 5;
-    private static final int B_D_PAD_DOWN = 6;
-    private static final int B_D_PAD_LEFT = 7;
-    private static final int B_D_PAD_RIGHT = 8;
-    private static final int B_START = 8;
-    private static final int B_BACK = 7;
-    private static final int B_LEFT_STICK = 9;
-    private static final int B_RIGHT_STICK = 10;
-    private static final int B_LEFT_BUMPER = 5;
-    private static final int B_RIGHT_BUMPER = 6;
-    private static final int B_X_HOME = 15;
-    private static final int B_A = 1;
-    private static final int B_B = 2;
-    private static final int B_X = 3;
-    private static final int B_Y = 4;
+    public static final int BUTTON_D_PAD_UP = 5;
+    public static final int BUTTON_D_PAD_DOWN = 6;
+    public static final int BUTTON_D_PAD_LEFT = 7;
+    public static final int BUTTON_D_PAD_RIGHT = 8;
+    public static final int BUTTON_START = 8;
+    public static final int BUTTON_BACK = 7;
+    public static final int BUTTON_LEFT_STICK = 9;
+    public static final int BUTTON_RIGHT_STICK = 10;
+    public static final int BUTTON_LEFT_BUMPER = 5;
+    public static final int BUTTON_RIGHT_BUMPER = 6;
+    public static final int BUTTON_X_HOME = 15;
+    public static final int BUTTON_A = 1;
+    public static final int BUTTON_B = 2;
+    public static final int BUTTON_X = 3;
+    public static final int BUTTON_Y = 4;
+    
     // Axis
     private static final int A_LEFT_X = 1;
     private static final int A_LEFT_Y = 2;
@@ -48,63 +50,63 @@ public class XboxController {
     }
 
     public boolean getLeftBumper() {
-        return mController.getRawButton(B_LEFT_BUMPER);
+        return mController.getRawButton(BUTTON_LEFT_BUMPER);
     }
 
     public boolean getRightBumper() {
-        return mController.getRawButton(B_RIGHT_BUMPER);
+        return mController.getRawButton(BUTTON_RIGHT_BUMPER);
     }
 
     public boolean getDPadUp() {
-        return mController.getRawButton(B_D_PAD_UP);
+        return mController.getRawButton(BUTTON_D_PAD_UP);
     }
 
     public boolean getDPadDown() {
-        return mController.getRawButton(B_D_PAD_DOWN);
+        return mController.getRawButton(BUTTON_D_PAD_DOWN);
     }
 
     public boolean getDPadLeft() {
-        return mController.getRawButton(B_D_PAD_LEFT);
+        return mController.getRawButton(BUTTON_D_PAD_LEFT);
     }
 
     public boolean getDPadRight() {
-        return mController.getRawButton(B_D_PAD_RIGHT);
+        return mController.getRawButton(BUTTON_D_PAD_RIGHT);
     }
 
     public boolean getStart() {
-        return mController.getRawButton(B_START);
+        return mController.getRawButton(BUTTON_START);
     }
 
     public boolean getBack() {
-        return mController.getRawButton(B_BACK);
+        return mController.getRawButton(BUTTON_BACK);
     }
 
     public boolean getLeftStickPressed() {
-        return mController.getRawButton(B_LEFT_STICK);
+        return mController.getRawButton(BUTTON_LEFT_STICK);
     }
 
     public boolean getRightStickPressed() {
-        return mController.getRawButton(B_RIGHT_STICK);
+        return mController.getRawButton(BUTTON_RIGHT_STICK);
     }
 
-    public boolean getA() {
-        return mController.getRawButton(B_A);
+    public boolean getAButton() {
+        return mController.getRawButton(BUTTON_A);
     }
 
-    public boolean getB() {
-        return mController.getRawButton(B_B);
+    public boolean getBButton() {
+        return mController.getRawButton(BUTTON_B);
     }
 
-    public boolean getX() {
-        return mController.getRawButton(B_X);
+    public boolean getXButton() {
+        return mController.getRawButton(BUTTON_X);
     }
 
-    public boolean getY() {
-        return mController.getRawButton(B_Y);
+    public boolean getYButton() {
+        return mController.getRawButton(BUTTON_Y);
     }
 
     public boolean getXboxButton() {
-        return mController.getRawButton(B_X_HOME);
+        return mController.getRawButton(BUTTON_X_HOME);
     }
 
     public double getLeftX() {
@@ -145,5 +147,60 @@ public class XboxController {
 
     public double getRightTrigger() {
         return mController.getRawAxis(A_RIGHT_TRIGGER);
+    }
+
+    public double getX(Hand hand) {
+        if(hand.equals(Hand.kLeft))
+            return getLeftX();
+        else
+            return getRightX();
+    }
+
+    public double getY(Hand hand) {
+        if(hand.equals(Hand.kLeft))
+            return getLeftY();
+        else
+            return getRightY();
+    }
+
+    public double getZ(Hand hand) {
+        if(hand.equals(Hand.kLeft))
+            return getLeftTrigger();
+        else
+            return getRightTrigger();
+    }
+
+    public double getTwist() {
+        return 0;
+    }
+
+    public double getThrottle() {
+        return 0;
+    }
+
+    public double getRawAxis(int i) {
+        return mController.getRawAxis(i);
+    }
+
+    public boolean getTrigger(Hand hand) {
+        if(hand.equals(Hand.kLeft))
+            return getLeftBumper();
+        else
+            return getRightBumper();
+    }
+
+    public boolean getTop(Hand hand) {
+        return false;
+    }
+
+    public boolean getBumper(Hand hand) {
+        if(hand.equals(Hand.kLeft))
+            return getLeftBumper();
+        else
+            return getRightBumper();
+    }
+
+    public boolean getRawButton(int i) {
+        return mController.getRawButton(i);
     }
 }

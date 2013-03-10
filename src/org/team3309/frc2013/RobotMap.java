@@ -36,5 +36,8 @@ public class RobotMap {
     public static final int SHOOTER_PHOTOSENSOR_CHANNEL = 7;
     
     
-    public static final int CLIMBER_TILTER_PISTON_FORWARD = 6;
+    public static final int CLIMBER_TIPPER_PISTON_FORWARD = 3;
+    public static final int CLIMBER_TIPPER_PISTON_REVERSE = 4;
+    
+    public static final int DUMPER = 6;
 }

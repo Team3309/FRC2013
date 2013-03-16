@@ -42,7 +42,7 @@ public class Shooter implements Runnable {
     private Shooter(int motorChannel, int loaderForward, int loaderBackward, int tilterForward, int tilterReverse, int encoder) {
         motor = new Victor(motorChannel);
         loaderPiston = new DoubleSolenoid(loaderForward, loaderBackward);
-        tilterPiston = new DoubleSolenoid(2, tilterForward, tilterReverse);
+        tilterPiston = new DoubleSolenoid(tilterForward, tilterReverse);
         cntr = new Counter(encoder);
         //cntr.setSemiPeriodMode(true);
         cntr.start();
@@ -67,13 +67,11 @@ public class Shooter implements Runnable {
 
     public void setPercent(double perc) {
         motor.set(perc);
-        SmartDashboard.putNumber("shooter perc", perc);
     }
     
     public void setTargetRpm(double rpm){
         //pid.setSetpoint(rpm / MAX_RPM);
         targetRpm = rpm;
-        SmartDashboard.putNumber("shooter target", rpm);
     }
     
     public double getRpm(){
@@ -136,8 +134,6 @@ public class Shooter implements Runnable {
                     motor.set(0);
                 
                 SmartDashboard.putNumber("shooter rpm", speed);
-                SmartDashboard.putNumber("shooter period", period);
-                SmartDashboard.putNumber("shooter counts", cntr.get());
                 
                 Thread.sleep(20);
             } catch (InterruptedException ex) {

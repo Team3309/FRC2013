@@ -108,7 +108,6 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
                 drive.setPto(power);
         }
         
-        System.out.println("pto count a: "+encoder.get());
         SmartDashboard.putNumber("climber count", encoder.get());
     }
 

@@ -30,20 +30,19 @@ public class AutoShootCommand extends Command{
     }
 
     protected void execute() {
+        System.out.println("autoshoot command running");
         mShooter.setTargetRpm(targetRpm);
         int attempts = 0;
         int frisbeesLeft = frisbees;
-        double lastRpm = mShooter.getTargetRpm();
+        while(!mShooter.isTargetSpeed())
+            Timer.delay(.25);
         while(frisbeesLeft > 0 && attempts < 5){
-            if(mShooter.isTargetSpeed())
+            System.out.println("frisbees left - "+frisbeesLeft);
+            if(mShooter.isTargetSpeed()){
                 mShooter.shoot();
-            double rpm = mShooter.getRpm();
-            if(lastRpm - rpm > 100) //this means that it shot and didn't jam
-                frisbeesLeft--;
-            else{ //we jammed
-                mShooter.unjam();
-                attempts++;
+                Timer.delay(.75);
             }
+            double rpm = mShooter.getRpm();
         }
         isFinished = true;
     }

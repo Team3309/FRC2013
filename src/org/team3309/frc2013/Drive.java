@@ -5,11 +5,13 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalSource;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -18,6 +20,24 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author friarbots
  */
 public class Drive implements Runnable {
+    
+    
+    private static Drive instance;
+    
+    public static Drive getInstance(){
+        if(instance == null){
+            instance = new Drive.Builder()
+                .left1(RobotMap.DRIVE_LEFT_1).left2(RobotMap.DRIVE_LEFT_2)
+                .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
+                .driveShifter(2, RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
+                .ptoShifter(2, RobotMap.DRIVE_SHIFTER_PTO_FORWARD, RobotMap.DRIVE_SHIFTER_PTO_REVERSE)
+                .neutralShifter(RobotMap.DRIVE_ENGAGE_NEUTRAL, RobotMap.DRIVE_DISENGAGE_NEUTRAL)
+                .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
+                .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
+                .build();
+        }
+        return instance;
+    }
 
     private static final int LOOP_TIME = 20;
     private static final int ENCODER_COUNTS = 360; //360 count, 1.33 encoder revs per wheel revolution
@@ -90,28 +110,31 @@ public class Drive implements Runnable {
 
                 lastLeftSpeed = leftSpeed;
                 lastRightSpeed = rightSpeed;
-
+                
                 Thread.sleep(LOOP_TIME);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
         }
     }
+    
     public static final int MODE_PERC = 0;
     public static final int MODE_RPM = 1;
     public static final int MODE_POS = 2;
     public static final int MAX_RPM = 1000;
-    private int mode = 0;
+    
     private Victor left1 = null;
     private Victor left2 = null;
     private Victor right1 = null;
     private Victor right2 = null;
     private DoubleSolenoid driveShifter = null;
     private DoubleSolenoid ptoShifter = null;
-    private Solenoid driveThirdPosShifter = null;
-    private Counter leftEncoder = null;
+    private DoubleSolenoid neutralShifter = null;
+    private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
     private double skimGain = .5;
+    
+    private DigitalSource leftSource = null;
 
     double skim(double v) {
         // gain determines how much to skim off the top
@@ -150,15 +173,10 @@ public class Drive implements Runnable {
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
 
-        System.out.println("left encoder counts:" + leftEncoder.get());
-        setLeft(left);
-
-        //setRightRpm(right * MAX_RPM);
+        setLeft(-left);
         setRight(right);
-    }
-
-    public void changeMode(int newmode) {
-        this.mode = newmode;
+        
+        //System.out.println("pto counts:"+leftEncoder.get());
     }
 
     public void highGear() {
@@ -170,14 +188,17 @@ public class Drive implements Runnable {
     }
 
     public void engagePto() {
-        ptoShifter.set(DoubleSolenoid.Value.kForward);
-        driveThirdPosShifter.set(true);
-        driveShifter.set(DoubleSolenoid.Value.kOff);
+        lowGear();
+        Timer.delay(.5);
+        ptoShifter.set(DoubleSolenoid.Value.kReverse);
+        Timer.delay(.5);
+        highGear();
+        neutralShifter.set(DoubleSolenoid.Value.kReverse);
     }
 
     public void disengagePto() {
-        ptoShifter.set(DoubleSolenoid.Value.kReverse);
-        driveThirdPosShifter.set(false);
+        ptoShifter.set(DoubleSolenoid.Value.kForward);
+        neutralShifter.set(DoubleSolenoid.Value.kForward);
     }
 
     private void setLeft(double val) {
@@ -189,11 +210,23 @@ public class Drive implements Runnable {
         right1.set(val);
         right2.set(val);
     }
+    
+    public void setPto(double val){
+        setLeft(val);
+    }
+    
+    public Encoder getPtoEncoder(){
+        return leftEncoder;
+    }
+    
+    public DigitalSource getLeftSource(){
+        return leftSource;
+    }
 
     private void onBuild() {
         this.leftEncoder.start();
         this.rightEncoder.start();
-        new Thread(this).start();
+        //new Thread(this).start();
         LeftPID left = new LeftPID();
         RightPID right = new RightPID();
         this.leftPid = new PIDController(kP, kI, kD, left, left);
@@ -204,7 +237,7 @@ public class Drive implements Runnable {
         SmartDashboard.putData("right pid", this.rightPid);
     }
 
-    public static class Builder {
+    private static class Builder {
 
         private Drive drive;
 
@@ -232,24 +265,24 @@ public class Drive implements Runnable {
             return this;
         }
 
-        public Builder driveShifter(int forward, int backwards) {
-            drive.driveShifter = new DoubleSolenoid(forward, backwards);
+        public Builder driveShifter(int module, int forward, int backwards) {
+            drive.driveShifter = new DoubleSolenoid(module, forward, backwards);
             return this;
         }
 
-        public Builder ptoShifter(int forward, int reverse) {
-            drive.ptoShifter = new DoubleSolenoid(forward, reverse);
+        public Builder ptoShifter(int module, int forward, int reverse) {
+            drive.ptoShifter = new DoubleSolenoid(module, forward, reverse);
             return this;
         }
         
-        public Builder thirdPosShifter(int port){
-            drive.driveThirdPosShifter = new Solenoid(port);
+        public Builder neutralShifter(int forward, int reverse){
+            drive.neutralShifter = new DoubleSolenoid(forward, reverse);
             return this;
         }
 
-        public Builder leftEncoder(int a) {
-            drive.leftEncoder = new Counter(a);
-            //drive.leftEncoder.setReverseDirection(true);
+        public Builder leftEncoder(int a, int b) {
+            drive.leftEncoder = new Encoder(a,b);
+            drive.leftEncoder.setReverseDirection(true);
             return this;
         }
 

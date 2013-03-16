@@ -5,13 +5,12 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
-import edu.wpi.first.wpilibj.DigitalSource;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -29,9 +28,9 @@ public class Drive implements Runnable {
             instance = new Drive.Builder()
                 .left1(RobotMap.DRIVE_LEFT_1).left2(RobotMap.DRIVE_LEFT_2)
                 .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
-                .driveShifter(2, RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
-                .ptoShifter(2, RobotMap.DRIVE_SHIFTER_PTO_FORWARD, RobotMap.DRIVE_SHIFTER_PTO_REVERSE)
-                .neutralShifter(RobotMap.DRIVE_ENGAGE_NEUTRAL, RobotMap.DRIVE_DISENGAGE_NEUTRAL)
+                .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
+                .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
+                .neutralShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_NEUTRAL)
                 .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
                 .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
                 .build();
@@ -128,14 +127,12 @@ public class Drive implements Runnable {
     private Victor right1 = null;
     private Victor right2 = null;
     private DoubleSolenoid driveShifter = null;
-    private DoubleSolenoid ptoShifter = null;
-    private DoubleSolenoid neutralShifter = null;
+    private Solenoid ptoShifter = null;
+    private Solenoid neutralShifter = null;
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
     private double skimGain = .5;
     
-    private DigitalSource leftSource = null;
-
     double skim(double v) {
         // gain determines how much to skim off the top
         if (v > 1.0) {
@@ -188,17 +185,13 @@ public class Drive implements Runnable {
     }
 
     public void engagePto() {
-        lowGear();
-        Timer.delay(.5);
-        ptoShifter.set(DoubleSolenoid.Value.kReverse);
-        Timer.delay(.5);
-        highGear();
-        neutralShifter.set(DoubleSolenoid.Value.kReverse);
+        neutralShifter.set(true);
+        ptoShifter.set(true);
     }
 
     public void disengagePto() {
-        ptoShifter.set(DoubleSolenoid.Value.kForward);
-        neutralShifter.set(DoubleSolenoid.Value.kForward);
+        ptoShifter.set(false);
+        neutralShifter.set(false);
     }
 
     private void setLeft(double val) {
@@ -219,10 +212,6 @@ public class Drive implements Runnable {
         return leftEncoder;
     }
     
-    public DigitalSource getLeftSource(){
-        return leftSource;
-    }
-
     private void onBuild() {
         this.leftEncoder.start();
         this.rightEncoder.start();
@@ -265,18 +254,18 @@ public class Drive implements Runnable {
             return this;
         }
 
-        public Builder driveShifter(int module, int forward, int backwards) {
-            drive.driveShifter = new DoubleSolenoid(module, forward, backwards);
+        public Builder driveShifter(int forward, int backwards) {
+            drive.driveShifter = new DoubleSolenoid(forward, backwards);
             return this;
         }
 
-        public Builder ptoShifter(int module, int forward, int reverse) {
-            drive.ptoShifter = new DoubleSolenoid(module, forward, reverse);
+        public Builder ptoShifter(int port) {
+            drive.ptoShifter = new Solenoid(port);
             return this;
         }
         
-        public Builder neutralShifter(int forward, int reverse){
-            drive.neutralShifter = new DoubleSolenoid(forward, reverse);
+        public Builder neutralShifter(int port){
+            drive.neutralShifter = new Solenoid(port);
             return this;
         }
 

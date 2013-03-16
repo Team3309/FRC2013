@@ -6,6 +6,7 @@ package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -17,8 +18,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class Shooter implements Runnable {
 
     private Victor motor = null;
-    private DoubleSolenoid loaderPiston = null;
-    private DoubleSolenoid tilterPiston = null;
+    private Solenoid loaderPiston = null;
+    private Solenoid tilterPiston = null;
     private Counter cntr = null;
     private double speed = 0;
     
@@ -32,17 +33,17 @@ public class Shooter implements Runnable {
     public static Shooter getInstance(){
         if(instance == null){
             instance = new Shooter(RobotMap.SHOOTER_MOTOR,
-                RobotMap.SHOOTER_LOADER_FORWARD, RobotMap.SHOOTER_LOADER_REVERSE,
-                RobotMap.SHOOTER_TILTER_FORWARD, RobotMap.SHOOTER_TILTER_REVERSE,
+                RobotMap.SHOOTER_LOADER,
+                RobotMap.SHOOTER_TILTER,
                 RobotMap.SHOOTER_PHOTOSENSOR_CHANNEL);
         }
         return instance;
     }
     
-    private Shooter(int motorChannel, int loaderForward, int loaderBackward, int tilterForward, int tilterReverse, int encoder) {
+    private Shooter(int motorChannel, int loader, int tilter, int encoder) {
         motor = new Victor(motorChannel);
-        loaderPiston = new DoubleSolenoid(loaderForward, loaderBackward);
-        tilterPiston = new DoubleSolenoid(tilterForward, tilterReverse);
+        loaderPiston = new Solenoid(loader);
+        tilterPiston = new Solenoid(tilter);
         cntr = new Counter(encoder);
         //cntr.setSemiPeriodMode(true);
         cntr.start();
@@ -50,19 +51,19 @@ public class Shooter implements Runnable {
     }
 
     public void extendLoader() {
-        loaderPiston.set(DoubleSolenoid.Value.kForward);
+        loaderPiston.set(true);
     }
     
     public void retractLoader(){
-        loaderPiston.set(DoubleSolenoid.Value.kReverse);
+        loaderPiston.set(false);
     }
     
     public void tiltUp(){
-        tilterPiston.set(DoubleSolenoid.Value.kForward);
+        tilterPiston.set(false);
     }
     
     public void tiltDown(){
-        tilterPiston.set(DoubleSolenoid.Value.kReverse);
+        tilterPiston.set(true);
     }
 
     public void setPercent(double perc) {

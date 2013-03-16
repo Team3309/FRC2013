@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -24,11 +25,11 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
 
     public static Climber getInstance() {
         if (instance == null) {
-            instance = new Climber(RobotMap.CLIMBER_TIPPER_PISTON_FORWARD, RobotMap.CLIMBER_TIPPER_PISTON_REVERSE, RobotMap.DUMPER, RobotMap.CLIMBER_TOP_LIMIT, RobotMap.CLIMBER_BOTTOM_LIMIT);
+            instance = new Climber(RobotMap.CLIMBER_TIPPER, RobotMap.DUMPER, RobotMap.CLIMBER_TOP_LIMIT, RobotMap.CLIMBER_BOTTOM_LIMIT);
         }
         return instance;
     }
-    private DoubleSolenoid tipper = null;
+    private Solenoid tipper = null;
     private Victor dumper = null;
     private Drive drive = null;
     private DigitalInput topLimit = null;
@@ -41,14 +42,11 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
     
     private PIDController pid = null;
     
-    private int count = 0;
-    private int countAtLastDirectionChange = 0;
-    
     private boolean lastSignPositive = false;
 
-    private Climber(int tipperForward, int tipperReverse, int dumper, int topLimit, int bottomLimit) {
+    private Climber(int tipper, int dumper, int topLimit, int bottomLimit) {
         drive = Drive.getInstance();
-        tipper = new DoubleSolenoid(tipperForward, tipperReverse);
+        this.tipper = new Solenoid(tipper);
         this.dumper = new Victor(dumper);
         this.topLimit = new DigitalInput(topLimit);
         this.bottomLimit = new DigitalInput(bottomLimit);
@@ -61,11 +59,11 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
     }
 
     public void tip() {
-        tipper.set(DoubleSolenoid.Value.kForward);
+        tipper.set(true);
     }
 
     public void retractTipper() {
-        tipper.set(DoubleSolenoid.Value.kReverse);
+        tipper.set(false);
     }
 
     public void setDumper(double x) {

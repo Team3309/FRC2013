@@ -100,7 +100,7 @@ public class Robot extends IterativeRobot {
         target *= Shooter.MAX_RPM;
 
         if (operatorXbox.getYButton()) {
-            target = 4200;
+            target = 4000;
         }
         mShooter.setTargetRpm(target);
         if (target > 2000) {

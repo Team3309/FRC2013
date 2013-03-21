@@ -24,7 +24,6 @@ public class RobotMap {
     public static final int DRIVE_SHIFTER_FORWARD       = 6;
     public static final int DRIVE_SHIFTER_REVERSE       = 7;
     public static final int DRIVE_SHIFTER_ENGAGE_PTO    = 5;
-    public static final int DRIVE_SHIFTER_ENGAGE_NEUTRAL    = 4;
     
     public static final int SHOOTER_MOTOR   = 6;
     public static final int SHOOTER_LOADER  = 3;
@@ -35,6 +34,7 @@ public class RobotMap {
     public static final int CLIMBER_TIPPER          = 1; 
     public static final int CLIMBER_TOP_LIMIT       = 5;
     public static final int CLIMBER_BOTTOM_LIMIT    = 6;
+    public static final int CLIMBER_LOCK            = 4;
     
     public static final int DUMPER = 5;
 }

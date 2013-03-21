@@ -18,11 +18,12 @@ public class AutoShootCommand extends Command{
     
     private Shooter mShooter = null;
     
-    private static final int targetRpm = 4200;
+    private int targetRpm;
     private int frisbees;
     
-    public AutoShootCommand(int frisbees){
+    public AutoShootCommand(int frisbees, int targetRpm){
         this.frisbees = frisbees;
+        this.targetRpm = targetRpm;
     }
     
     protected void initialize() {
@@ -34,15 +35,17 @@ public class AutoShootCommand extends Command{
         mShooter.setTargetRpm(targetRpm);
         int attempts = 0;
         int frisbeesLeft = frisbees;
-        while(!mShooter.isTargetSpeed())
-            Timer.delay(.25);
-        while(frisbeesLeft > 0 && attempts < 5){
+        while(frisbeesLeft > 0 && attempts < 7){
+            while(!mShooter.isTargetSpeed())
+                Timer.delay(.1);
+            System.out.println("autoshoot still running");
             System.out.println("frisbees left - "+frisbeesLeft);
+            System.out.println("attempts left - "+attempts);
             if(mShooter.isTargetSpeed()){
                 mShooter.shoot();
-                Timer.delay(.75);
+                Timer.delay(.1);
             }
-            double rpm = mShooter.getRpm();
+            frisbeesLeft--;
         }
         isFinished = true;
     }

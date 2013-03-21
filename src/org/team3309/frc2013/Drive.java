@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -30,7 +31,6 @@ public class Drive implements Runnable {
                 .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
                 .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
                 .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
-                .neutralShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_NEUTRAL)
                 .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
                 .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
                 .build();
@@ -128,7 +128,6 @@ public class Drive implements Runnable {
     private Victor right2 = null;
     private DoubleSolenoid driveShifter = null;
     private Solenoid ptoShifter = null;
-    private Solenoid neutralShifter = null;
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
     private double skimGain = .5;
@@ -185,13 +184,14 @@ public class Drive implements Runnable {
     }
 
     public void engagePto() {
-        neutralShifter.set(true);
+        lowGear();
+        driveShifter.set(DoubleSolenoid.Value.kOff);
+        Timer.delay(.1);
         ptoShifter.set(true);
     }
 
     public void disengagePto() {
         ptoShifter.set(false);
-        neutralShifter.set(false);
     }
 
     private void setLeft(double val) {
@@ -264,11 +264,6 @@ public class Drive implements Runnable {
             return this;
         }
         
-        public Builder neutralShifter(int port){
-            drive.neutralShifter = new Solenoid(port);
-            return this;
-        }
-
         public Builder leftEncoder(int a, int b) {
             drive.leftEncoder = new Encoder(a,b);
             drive.leftEncoder.setReverseDirection(true);

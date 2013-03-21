@@ -5,7 +5,6 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -16,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * @author friarbots
  */
 public class Shooter implements Runnable {
+    
+    public static final int PYRAMID_TARGET_RPM = 4000;
 
     private Victor motor = null;
     private Solenoid loaderPiston = null;
@@ -51,19 +52,19 @@ public class Shooter implements Runnable {
     }
 
     public void extendLoader() {
-        loaderPiston.set(true);
-    }
-    
-    public void retractLoader(){
         loaderPiston.set(false);
     }
     
+    public void retractLoader(){
+        loaderPiston.set(true);
+    }
+    
     public void tiltUp(){
-        tilterPiston.set(false);
+        tilterPiston.set(true);
     }
     
     public void tiltDown(){
-        tilterPiston.set(true);
+        tilterPiston.set(false);
     }
 
     public void setPercent(double perc) {
@@ -84,7 +85,7 @@ public class Shooter implements Runnable {
      * @return 
      */
     public boolean isTargetSpeed(){
-        return Math.abs(speed - targetRpm) < 15;
+        return Math.abs(speed - targetRpm) < 50;
     }
     
     public void shoot(){

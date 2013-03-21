@@ -41,7 +41,7 @@ public class XboxController extends GenericHID{
     private static final int A_LEFT_TRIGGER = 3;
     private static final int A_RIGHT_TRIGGER = 4;
     private static final int A_RIGHT_X = 4;
-    private static final int A_RIGHT_Y = 6;
+    private static final int A_RIGHT_Y = 5;
     
     private Joystick mController;
 

@@ -39,7 +39,7 @@ public class XboxController extends GenericHID{
     private static final int A_LEFT_X = 1;
     private static final int A_LEFT_Y = 2;
     private static final int A_LEFT_TRIGGER = 3;
-    private static final int A_RIGHT_TRIGGER = 4;
+    private static final int A_RIGHT_TRIGGER = 9;
     private static final int A_RIGHT_X = 4;
     private static final int A_RIGHT_Y = 5;
     
@@ -111,42 +111,30 @@ public class XboxController extends GenericHID{
 
     public double getLeftX() {
         double val = mController.getRawAxis(A_LEFT_X);
-        if (Math.abs(val) < DEADBAND) {
-            return 0;
-        }
-        return val;
+        return scaleAxis(val);
     }
 
     public double getLeftY() {
         double val = mController.getRawAxis(A_LEFT_Y);
-        if (Math.abs(val) < DEADBAND) {
-            return 0;
-        }
-        return val;
+        return scaleAxis(val);
     }
 
     public double getLeftTrigger() {
-        return mController.getRawAxis(A_LEFT_TRIGGER);
+        return Math.abs(mController.getRawAxis(A_LEFT_TRIGGER));
     }
 
     public double getRightX() {
         double val = mController.getRawAxis(A_RIGHT_X);
-        if (Math.abs(val) < DEADBAND) {
-            return 0;
-        }
-        return val;
+        return scaleAxis(val);
     }
 
     public double getRightY() {
         double val = mController.getRawAxis(A_RIGHT_Y);
-        if (Math.abs(val) < DEADBAND) {
-            return 0;
-        }
-        return val;
+        return scaleAxis(val);
     }
 
     public double getRightTrigger() {
-        return mController.getRawAxis(A_RIGHT_TRIGGER);
+        return Math.abs(mController.getRawAxis(A_RIGHT_TRIGGER));
     }
 
     public double getX(Hand hand) {
@@ -202,5 +190,12 @@ public class XboxController extends GenericHID{
 
     public boolean getRawButton(int i) {
         return mController.getRawButton(i);
+    }
+    
+    private double scaleAxis(double val){
+        if(Math.abs(val) < DEADBAND)
+            return 0;
+        else
+            return val*val*val;
     }
 }

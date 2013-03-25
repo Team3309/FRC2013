@@ -55,6 +55,8 @@ public class Robot extends IterativeRobot {
         autonStartTime = Timer.getFPGATimestamp();
         mClimber.unlock();
         mShooter.tiltDown();
+        mClimber.retractTipper();
+        mClimber.disableClimbingMode();
     }
 
     /**
@@ -73,14 +75,14 @@ public class Robot extends IterativeRobot {
         }
         if (mShooter.isTargetSpeed()) {
             mShooter.extendLoader();
-            Timer.delay(3);
+            Timer.delay(2);
             mShooter.retractLoader();
+            Timer.delay(.5);
             frisbeesShot++;
         } else if (Timer.getFPGATimestamp() - autonStartTime > 7 && frisbeesShot == 0) {
             mShooter.shoot();
             Timer.delay(2);
         }
-        
     }
 
     public void teleopInit() {
@@ -88,6 +90,8 @@ public class Robot extends IterativeRobot {
         //autoShootButton.whenPressed(teleopAutoShoot);
         mClimber.unlock();
         mShooter.tiltDown();
+        mClimber.retractTipper();
+        mClimber.disableClimbingMode();
     }
     boolean climbingMode = false;
 

@@ -5,6 +5,7 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
@@ -23,11 +24,11 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
 
     public static Climber getInstance() {
         if (instance == null) {
-            instance = new Climber(RobotMap.CLIMBER_TIPPER, RobotMap.DUMPER, RobotMap.CLIMBER_TOP_LIMIT, RobotMap.CLIMBER_BOTTOM_LIMIT, RobotMap.CLIMBER_LOCK);
+            instance = new Climber(RobotMap.CLIMBER_TIPPER_FORWARD, RobotMap.CLIMBER_TIPPER_REVERSE, RobotMap.DUMPER, RobotMap.CLIMBER_TOP_LIMIT, RobotMap.CLIMBER_BOTTOM_LIMIT, RobotMap.CLIMBER_LOCK);
         }
         return instance;
     }
-    private Solenoid tipper = null;
+    private DoubleSolenoid tipper = null;
     private Solenoid lock = null;
     private Victor dumper = null;
     private Drive drive = null;
@@ -43,9 +44,9 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
     
     private boolean lastSignPositive = false;
 
-    private Climber(int tipper, int dumper, int topLimit, int bottomLimit, int lock) {
+    private Climber(int tipperForward, int tipperReverse, int dumper, int topLimit, int bottomLimit, int lock) {
         drive = Drive.getInstance();
-        this.tipper = new Solenoid(tipper);
+        this.tipper = new DoubleSolenoid(tipperForward, tipperReverse);
         this.dumper = new Victor(dumper);
         this.topLimit = new DigitalInput(topLimit);
         this.bottomLimit = new DigitalInput(bottomLimit);
@@ -60,11 +61,11 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
     }
 
     public void tip() {
-        tipper.set(true);
+        tipper.set(DoubleSolenoid.Value.kForward);
     }
 
     public void retractTipper() {
-        tipper.set(false);
+        tipper.set(DoubleSolenoid.Value.kReverse);
     }
 
     public void setDumper(double x) {
@@ -75,6 +76,7 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
         inClimbMode = true;
         encoder.reset();
         encoder.start();
+        unlock();
     }
 
     public void disableClimbingMode() {
@@ -107,7 +109,6 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
                 drive.setPto(power);
         }
         
-        SmartDashboard.putNumber("climber count", encoder.get());
     }
     
     public void lock(){

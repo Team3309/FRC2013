@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Shooter implements Runnable {
     
-    public static final int PYRAMID_TARGET_RPM = 4000;
+    public static final int PYRAMID_TARGET_RPM = 4500;
 
     private Victor motor = null;
     private Solenoid loaderPiston = null;
@@ -60,11 +60,11 @@ public class Shooter implements Runnable {
     }
     
     public void tiltUp(){
-        tilterPiston.set(true);
+        tilterPiston.set(false);
     }
     
     public void tiltDown(){
-        tilterPiston.set(false);
+        tilterPiston.set(true);
     }
 
     public void setPercent(double perc) {
@@ -90,7 +90,7 @@ public class Shooter implements Runnable {
     
     public void shoot(){
         extendLoader();
-        Timer.delay(.1);
+        Timer.delay(.5);
         retractLoader();
         Timer.delay(.25);
         extendLoader();
@@ -136,6 +136,7 @@ public class Shooter implements Runnable {
                     motor.set(0);
                 
                 SmartDashboard.putNumber("shooter rpm", speed);
+                SmartDashboard.putNumber("shooter counts", cntr.get());
                 
                 Thread.sleep(20);
             } catch (InterruptedException ex) {

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Shooter implements Runnable {
     
-    public static final int PYRAMID_TARGET_RPM = 4500;
+    public static final int PYRAMID_TARGET_RPM = 3500;
 
     private Victor motor = null;
     private Solenoid loaderPiston = null;

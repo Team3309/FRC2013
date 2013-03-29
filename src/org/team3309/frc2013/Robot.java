@@ -81,7 +81,7 @@ public class Robot extends IterativeRobot {
         
         if(frisbeesShot > 3){
             mDrive.lowGear();
-            mDrive.drive(-.5, 0);
+            mDrive.drive(.5, 0);
             Timer.delay(2);
             mDrive.stop();
         }
@@ -97,6 +97,8 @@ public class Robot extends IterativeRobot {
     
     boolean climbingMode = false;
 
+    boolean lastOpLeftBumper = false;
+    
     /**
      * This function is called periodically during operator control
      */
@@ -126,7 +128,7 @@ public class Robot extends IterativeRobot {
             }
 
             double throttle = driveXbox.getLeftY();
-            double turn = driveXbox.getRightX();
+            double turn = driveXbox.getRightX()*.25;
             
             if(driveXbox.getLeftBumper()){ //invert controls so that lining up for a climb is easier
                 throttle = -throttle;
@@ -161,11 +163,11 @@ public class Robot extends IterativeRobot {
             target = Shooter.PYRAMID_TARGET_RPM;
             if (mShooter.isTargetSpeed()) {
                 mShooter.shoot();
-                Timer.delay(.75);
+                Timer.delay(.25);
             }
         }
         if(operatorXbox.getLeftBumper())
-            target += opLeftStick;
+            mShooter.shoot();
         
         mShooter.setTargetRpm(target);
         if (target >= 2000) {

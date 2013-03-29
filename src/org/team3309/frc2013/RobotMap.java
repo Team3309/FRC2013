@@ -21,15 +21,14 @@ public class RobotMap {
     public static final int DRIVE_ENCODER_LEFT_B    = 13;
     public static final int DRIVE_ENCODER_RIGHT_A   = 1;
     public static final int DRIVE_ENCODER_RIGHT_B   = 2;
-    public static final int DRIVE_TAPE_SENSOR       = 0; //TODO find a port for this
     
-    public static final int DRIVE_SHIFTER_FORWARD       = 6;
-    public static final int DRIVE_SHIFTER_REVERSE       = 7;
-    public static final int DRIVE_SHIFTER_ENGAGE_PTO    = 5;
+    public static final int DRIVE_SHIFTER_FORWARD       = 7;
+    public static final int DRIVE_SHIFTER_REVERSE       = 2;
+    public static final int DRIVE_SHIFTER_ENGAGE_PTO    = 6;
     
     public static final int SHOOTER_MOTOR   = 6;
-    public static final int SHOOTER_LOADER  = 3;
-    public static final int SHOOTER_TILTER  = 2;
+    public static final int SHOOTER_LOADER  = 5;
+    public static final int SHOOTER_TILTER  = 3;
     public static final int SHOOTER_PHOTOSENSOR_CHANNEL = 9;
     
     

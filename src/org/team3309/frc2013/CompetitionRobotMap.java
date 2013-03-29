@@ -21,7 +21,6 @@ public class CompetitionRobotMap {
     public static final int DRIVE_ENCODER_LEFT_B    = 13;
     public static final int DRIVE_ENCODER_RIGHT_A   = 1;
     public static final int DRIVE_ENCODER_RIGHT_B   = 2;
-    public static final int DRIVE_TAPE_SENSOR       = 0; //TODO find a port for this
     
     public static final int DRIVE_SHIFTER_FORWARD       = 6;
     public static final int DRIVE_SHIFTER_REVERSE       = 7;

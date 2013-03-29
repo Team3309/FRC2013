@@ -9,9 +9,7 @@ package org.team3309.frc2013;
 import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.buttons.JoystickButton;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import org.team3309.frc2013.commands.AutoShootCommand;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to each mode, as described in the IterativeRobot documentation. If you change the name of this class or
@@ -25,8 +23,6 @@ public class Robot extends IterativeRobot {
     private XboxController driveXbox = new XboxController(1);
     private XboxController operatorXbox = new XboxController(2);
     private Compressor compressor = null;
-    private AutoShootCommand teleopAutoShoot = new AutoShootCommand(4, Shooter.PYRAMID_TARGET_RPM);
-    private AutoShootCommand autonAutoShoot = new AutoShootCommand(3, Shooter.PYRAMID_TARGET_RPM);
     private Scheduler scheduler;
 
     /**
@@ -63,9 +59,8 @@ public class Robot extends IterativeRobot {
      * This function is called periodically during autonomous
      */
     public void autonomousPeriodic() {
-        mDrive.drive(0, 0);
+        mDrive.stop();
         mDrive.disengagePto();
-        mDrive.highGear();
         mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
         while (!mShooter.isTargetSpeed()) {
             Timer.delay(.1);
@@ -73,7 +68,7 @@ public class Robot extends IterativeRobot {
                 return;
             }
         }
-        if (mShooter.isTargetSpeed()) {
+        if (mShooter.isTargetSpeed() && frisbeesShot <= 3) {
             mShooter.extendLoader();
             Timer.delay(2);
             mShooter.retractLoader();
@@ -83,16 +78,23 @@ public class Robot extends IterativeRobot {
             mShooter.shoot();
             Timer.delay(2);
         }
+        
+        if(frisbeesShot > 3){
+            mDrive.lowGear();
+            mDrive.drive(-.5, 0);
+            Timer.delay(2);
+            mDrive.stop();
+        }
     }
 
     public void teleopInit() {
-        JoystickButton autoShootButton = new JoystickButton(operatorXbox, XboxController.BUTTON_X);
-        //autoShootButton.whenPressed(teleopAutoShoot);
         mClimber.unlock();
         mShooter.tiltDown();
         mClimber.retractTipper();
         mClimber.disableClimbingMode();
+        mDrive.highGear();
     }
+    
     boolean climbingMode = false;
 
     /**
@@ -165,12 +167,6 @@ public class Robot extends IterativeRobot {
         if(operatorXbox.getLeftBumper())
             target += opLeftStick;
         
-        if(operatorXbox.getStart())
-            mShooter.extendLoader();
-        else if(operatorXbox.getBack())
-            mShooter.retractLoader();
-        
-        System.out.println("shooter target: "+target);
         mShooter.setTargetRpm(target);
         if (target >= 2000) {
             compressor.stop();
@@ -178,12 +174,6 @@ public class Robot extends IterativeRobot {
             compressor.start();
         }
 
-        /*if (operatorXbox.getRightBumper()) {
-            mShooter.extendLoader();
-        } else if (operatorXbox.getLeftBumper()) {
-            mShooter.retractLoader();
-        }*/
-        
         if (operatorXbox.getBButton()) {
             mShooter.tiltUp();
         } else if (operatorXbox.getAButton()) {

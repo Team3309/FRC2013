@@ -17,9 +17,11 @@ public class RobotMap {
     public static final int DRIVE_LEFT_2    = 2;
     public static final int DRIVE_RIGHT_1   = 3;
     public static final int DRIVE_RIGHT_2   = 4;
-    public static final int DRIVE_ENCODER_LEFT_A = 12;
-    public static final int DRIVE_ENCODER_LEFT_B = 13;
-    public static final int DRIVE_ENCODER_RIGHT_A = 1;
+    public static final int DRIVE_ENCODER_LEFT_A    = 12;
+    public static final int DRIVE_ENCODER_LEFT_B    = 13;
+    public static final int DRIVE_ENCODER_RIGHT_A   = 1;
+    public static final int DRIVE_ENCODER_RIGHT_B   = 2;
+    public static final int DRIVE_TAPE_SENSOR       = 0; //TODO find a port for this
     
     public static final int DRIVE_SHIFTER_FORWARD       = 6;
     public static final int DRIVE_SHIFTER_REVERSE       = 7;

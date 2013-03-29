@@ -5,6 +5,7 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.PIDController;
@@ -39,7 +40,7 @@ public class Drive implements Runnable {
     }
 
     private static final int LOOP_TIME = 20;
-    private static final int ENCODER_COUNTS = 360; //360 count, 1.33 encoder revs per wheel revolution
+    private static final int ENCODER_COUNTS = 360; //360 count
     private static final double FILTER_STRENGTH = .5; //must be between 0 and 1
     private static final double kP = .75, kI = .1, kD = 1;
     private double leftSpeed = 0;
@@ -50,7 +51,7 @@ public class Drive implements Runnable {
     private PIDController rightPid = null;
     private boolean leftNeg = false;
     private boolean rightNeg = false;
-
+    
     private class LeftPID implements PIDSource, PIDOutput {
 
         public double pidGet() {
@@ -130,6 +131,7 @@ public class Drive implements Runnable {
     private Solenoid ptoShifter = null;
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
+    
     private double skimGain = .5;
     
     double skim(double v) {
@@ -192,6 +194,10 @@ public class Drive implements Runnable {
 
     public void disengagePto() {
         ptoShifter.set(false);
+    }
+    
+    public void stop(){
+        drive(0,0);
     }
 
     private void setLeft(double val) {
@@ -275,7 +281,7 @@ public class Drive implements Runnable {
             drive.rightEncoder.setReverseDirection(true);
             return this;
         }
-
+        
         public Drive build() {
             drive.onBuild();
             return drive;

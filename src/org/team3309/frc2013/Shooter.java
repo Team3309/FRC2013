@@ -52,11 +52,11 @@ public class Shooter implements Runnable {
     }
 
     public void extendLoader() {
-        loaderPiston.set(false);
+        loaderPiston.set(true);
     }
     
     public void retractLoader(){
-        loaderPiston.set(true);
+        loaderPiston.set(false);
     }
     
     public void tiltUp(){
@@ -92,8 +92,6 @@ public class Shooter implements Runnable {
         extendLoader();
         Timer.delay(.5);
         retractLoader();
-        Timer.delay(.25);
-        extendLoader();
     }
     
     public void unjam(){

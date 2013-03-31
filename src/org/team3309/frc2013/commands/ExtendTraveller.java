@@ -18,10 +18,12 @@ public class ExtendTraveller extends Command {
     protected void initialize() {
         mClimber = Climber.getInstance();
     }
+    
+    private double FULL_SPEED_TIME = 1; //time
 
     protected void execute() {
         if(!mClimber.getTopLimit()){
-            mClimber.runTraveller(.5);
+            mClimber.runTraveller(1);
             System.out.println("running extendtraveller command");
         }
     }

@@ -5,12 +5,9 @@
 package org.team3309.frc2013;
 
 import edu.wpi.first.wpilibj.Counter;
-import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
-import edu.wpi.first.wpilibj.PIDSource;
+import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -20,7 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *
  * @author friarbots
  */
-public class Drive implements Runnable {
+public class Drive {
     
     
     private static Drive instance;
@@ -34,94 +31,13 @@ public class Drive implements Runnable {
                 .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
                 .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
                 .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
+                .gyro(RobotMap.DRIVE_GYRO)
                 .build();
         }
         return instance;
     }
 
-    private static final int LOOP_TIME = 20;
-    private static final int ENCODER_COUNTS = 360; //360 count
-    private static final double FILTER_STRENGTH = .5; //must be between 0 and 1
-    private static final double kP = .75, kI = .1, kD = 1;
-    private double leftSpeed = 0;
-    private double rightSpeed = 0;
-    private double lastRightSpeed = 0;
-    private double lastLeftSpeed = 0;
-    private PIDController leftPid = null;
-    private PIDController rightPid = null;
-    private boolean leftNeg = false;
-    private boolean rightNeg = false;
-    
-    private class LeftPID implements PIDSource, PIDOutput {
-
-        public double pidGet() {
-            return leftSpeed / MAX_RPM;
-        }
-
-        public void pidWrite(double d) {
-            if (Math.abs(d) < .05) {
-                setLeft(0);
-            }
-            if (leftNeg) {
-                setLeft(-d);
-            } else {
-                setLeft(d);
-            }
-            SmartDashboard.putNumber("left output", d);
-        }
-    }
-
-    private class RightPID implements PIDSource, PIDOutput {
-
-        public double pidGet() {
-            return rightSpeed / MAX_RPM;
-        }
-
-        public void pidWrite(double d) {
-            if (Math.abs(d) < .05) {
-                setRight(0);
-            }
-            if (rightNeg) {
-                setRight(-d);
-            } else {
-                setRight(d);
-            }
-            SmartDashboard.putNumber("right output", d);
-        }
-    }
-
-    public void run() {
-        while (true) {
-            try {
-                int leftCount = leftEncoder.get();
-                int rightCount = rightEncoder.get();
-                leftEncoder.reset();
-                rightEncoder.reset();
-                leftSpeed = (60.0 / ENCODER_COUNTS) * leftCount / (LOOP_TIME) * 1000;
-                rightSpeed = (60.0 / ENCODER_COUNTS) * rightCount / (LOOP_TIME) * 1000;
-
-                //filtering code
-                //http://www.chiefdelphi.com/forums/showpost.php?p=1132943&postcount=15
-                leftSpeed = FILTER_STRENGTH * lastLeftSpeed + (1 - FILTER_STRENGTH) * leftSpeed;
-                rightSpeed = FILTER_STRENGTH * lastRightSpeed + (1 - FILTER_STRENGTH) * rightSpeed;
-
-                SmartDashboard.putNumber("left rpm", leftSpeed);
-                SmartDashboard.putNumber("right rpm", rightSpeed);
-
-                lastLeftSpeed = leftSpeed;
-                lastRightSpeed = rightSpeed;
-                
-                Thread.sleep(LOOP_TIME);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-    
-    public static final int MODE_PERC = 0;
-    public static final int MODE_RPM = 1;
-    public static final int MODE_POS = 2;
-    public static final int MAX_RPM = 1000;
+    private static final double SLOW_DRIVE_THRESHOLD = .2;
     
     private Victor left1 = null;
     private Victor left2 = null;
@@ -131,8 +47,11 @@ public class Drive implements Runnable {
     private Solenoid ptoShifter = null;
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
+    private Gyro gyro = null;
+    private double gyroOffset = 0;
+    private double gyroKp = 0.03;
     
-    private double skimGain = .5;
+    private double skimGain = .25;
     
     double skim(double v) {
         // gain determines how much to skim off the top
@@ -143,40 +62,41 @@ public class Drive implements Runnable {
         }
         return 0;
     }
-
-    public void setLeftRpm(double rpm) {
-        this.leftPid.setSetpoint(Math.abs(rpm / MAX_RPM));
-        if (rpm < 0) {
-            this.leftNeg = true;
-        } else {
-            this.leftNeg = false;
-        }
-    }
-
-    public void setRightRpm(double rpm) {
-        this.rightPid.setSetpoint(Math.abs(rpm / MAX_RPM));
-        if (rpm < 0) {
-            this.leftNeg = true;
-        } else {
-            this.leftNeg = false;
-        }
-    }
-
-    public void drive(double throttle, double turn) {
-        turn = -turn;
-
+    
+    public void driveStraight(double throttle) {
+        System.out.println("attempting to drive straight");
+        double turn = getAngle()*gyroKp;
+        SmartDashboard.putNumber("gyro compensation", turn);
+        
+        SmartDashboard.putNumber("Gyro", getAngle());
+        
         double t_left = throttle + turn;
         double t_right = throttle - turn;
 
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
-
+        
         setLeft(-left);
         setRight(right);
-        
-        //System.out.println("pto counts:"+leftEncoder.get());
     }
+    
+    public void drive(double throttle, double turn){
+        //driveStraight(throttle);
+        
+        turn = -turn;
+        
+        SmartDashboard.putNumber("Gyro", getAngle());
+        
+        double t_left = throttle + turn;
+        double t_right = throttle - turn;
 
+        double left = t_left + skim(t_right);
+        double right = t_right + skim(t_left);
+        
+        setLeft(-left);
+        setRight(right);
+    }
+    
     public void highGear() {
         driveShifter.set(DoubleSolenoid.Value.kReverse);
     }
@@ -218,18 +138,31 @@ public class Drive implements Runnable {
         return leftEncoder;
     }
     
+    public double getAngle(){
+        return (gyro.getAngle() - gyroOffset) % 360;
+    }
+    
+    public void resetGyro(){
+        System.out.println("resetting gyro");
+        gyro.reset();
+        gyroOffset = 0;
+    }
+    
+    public void resetOffset(){
+        gyroOffset = getAngle();
+    }
+    
+    public void changeOffset(double delta){
+        gyroOffset += delta;
+    }
+    
+    public void setOffset(double angle){
+        gyroOffset = 0;
+    }
+    
     private void onBuild() {
         this.leftEncoder.start();
         this.rightEncoder.start();
-        //new Thread(this).start();
-        LeftPID left = new LeftPID();
-        RightPID right = new RightPID();
-        this.leftPid = new PIDController(kP, kI, kD, left, left);
-        this.rightPid = new PIDController(kP, kI, kD, right, right);
-        //this.leftPid.enable();
-        //this.rightPid.enable();
-        SmartDashboard.putData("left pid", this.leftPid);
-        SmartDashboard.putData("right pid", this.rightPid);
     }
 
     private static class Builder {
@@ -279,6 +212,11 @@ public class Drive implements Runnable {
         public Builder rightEncoder(int a) {
             drive.rightEncoder = new Counter(a);
             drive.rightEncoder.setReverseDirection(true);
+            return this;
+        }
+        
+        public Builder gyro(int port){
+            drive.gyro = new Gyro(port);
             return this;
         }
         

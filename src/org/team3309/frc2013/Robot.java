@@ -59,11 +59,12 @@ public class Robot extends IterativeRobot {
     }
 
     public void disabledPeriodic() {
+        SmartDashboard.putNumber("Gyro", mDrive.getAngularRateOfChange());
     }
 
     public void autonomousInit() {
         mDrive.resetGyro();
-
+        
         mClimber.unlock();
         mShooter.tiltDown();
         mClimber.retractTipper();
@@ -82,6 +83,8 @@ public class Robot extends IterativeRobot {
     }
 
     public void teleopInit() {
+        mDrive.resetGyro();
+        
         mClimber.unlock();
         mShooter.tiltDown();
         mClimber.retractTipper();
@@ -126,7 +129,6 @@ public class Robot extends IterativeRobot {
                 speed = throttle;
             }
 
-
             if (Math.abs(driveXbox.getRightTrigger()) > .25) {
                 mDrive.lowGear();
                 compressor.stop();
@@ -141,16 +143,7 @@ public class Robot extends IterativeRobot {
             }
             if (driveXbox.getLeftBumper()) //invert controls so that lining up for a climb is easier
             {
-                mDrive.driveStraight(-speed);
-            }
-            if(driveXbox.getRightBumper())
-                mDrive.driveStraight(throttle);
-
-            if (driveXbox.getAButton()) {
-                mDrive.resetGyro();
-            }
-            if (driveXbox.getBButton()) {
-                mDrive.setOffset(0);
+                mDrive.drive(-speed, turn);
             }
         }
 

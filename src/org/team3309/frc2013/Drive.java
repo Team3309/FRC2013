@@ -17,28 +17,44 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *
  * @author friarbots
  */
-public class Drive {
-    
-    
+public class Drive implements Runnable {
+
     private static Drive instance;
-    
-    public static Drive getInstance(){
-        if(instance == null){
+
+    public static Drive getInstance() {
+        if (instance == null) {
             instance = new Drive.Builder()
-                .left1(RobotMap.DRIVE_LEFT_1).left2(RobotMap.DRIVE_LEFT_2)
-                .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
-                .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
-                .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
-                .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
-                .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
-                .gyro(RobotMap.DRIVE_GYRO)
-                .build();
+                    .left1(RobotMap.DRIVE_LEFT_1).left2(RobotMap.DRIVE_LEFT_2)
+                    .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
+                    .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
+                    .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
+                    .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
+                    .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
+                    .gyro(RobotMap.DRIVE_GYRO)
+                    .build();
         }
         return instance;
     }
-
-    private static final double SLOW_DRIVE_THRESHOLD = .2;
     
+    private double lastTheta = 0;
+    private double lastTime = 0;
+
+    public void run() {
+        lastTime = Timer.getFPGATimestamp();
+        lastTheta = getAngle();
+        while (true) {
+            double theta = getAngle();
+            angularRate = (theta - lastTheta)/(Timer.getFPGATimestamp() - lastTime);
+            lastTime = Timer.getFPGATimestamp();
+            lastTheta = theta;
+            try {
+                Thread.sleep(20);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
     private Victor left1 = null;
     private Victor left2 = null;
     private Victor right1 = null;
@@ -47,12 +63,17 @@ public class Drive {
     private Solenoid ptoShifter = null;
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
+    
     private Gyro gyro = null;
-    private double gyroOffset = 0;
     private double gyroKp = 0.03;
+    private double gyroOffset = 0;
+    private double angularRate = 0;
+    private static final double MAX_ANGULAR_RATE_OF_CHANGE = 180; //180 deg/s
     
     private double skimGain = .25;
     
+    
+
     double skim(double v) {
         // gain determines how much to skim off the top
         if (v > 1.0) {
@@ -62,41 +83,44 @@ public class Drive {
         }
         return 0;
     }
-    
-    public void driveStraight(double throttle) {
+
+    /*public void driveStraight(double throttle) {
         System.out.println("attempting to drive straight");
-        double turn = getAngle()*gyroKp;
+        double turn = getAngle() * gyroKp;
         SmartDashboard.putNumber("gyro compensation", turn);
-        
+
         SmartDashboard.putNumber("Gyro", getAngle());
-        
+
         double t_left = throttle + turn;
         double t_right = throttle - turn;
 
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
-        
+
         setLeft(-left);
         setRight(right);
-    }
-    
-    public void drive(double throttle, double turn){
-        //driveStraight(throttle);
-        
+    }*/
+
+    public void drive(double throttle, double turn) {
         turn = -turn;
         
-        SmartDashboard.putNumber("Gyro", getAngle());
+        double omega = getAngularRateOfChange();
+        double desiredOmega = turn*MAX_ANGULAR_RATE_OF_CHANGE;
         
-        double t_left = throttle + turn;
-        double t_right = throttle - turn;
+        double turnOutput = (omega - desiredOmega) * gyroKp;
+        
+        SmartDashboard.putNumber("Gyro", getAngularRateOfChange());
+
+        double t_left = throttle + turnOutput;
+        double t_right = throttle - turnOutput;
 
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
-        
+
         setLeft(-left);
         setRight(right);
     }
-    
+
     public void highGear() {
         driveShifter.set(DoubleSolenoid.Value.kReverse);
     }
@@ -115,9 +139,9 @@ public class Drive {
     public void disengagePto() {
         ptoShifter.set(false);
     }
-    
-    public void stop(){
-        drive(0,0);
+
+    public void stop() {
+        drive(0, 0);
     }
 
     private void setLeft(double val) {
@@ -129,40 +153,29 @@ public class Drive {
         right1.set(val);
         right2.set(val);
     }
-    
-    public void setPto(double val){
+
+    public void setPto(double val) {
         setLeft(val);
     }
-    
-    public Encoder getPtoEncoder(){
+
+    public Encoder getPtoEncoder() {
         return leftEncoder;
     }
-    
+
     public double getAngle(){
-        return (gyro.getAngle() - gyroOffset) % 360;
+        return gyro.getAngle();
+    }
+    
+    public double getAngularRateOfChange(){
+        return angularRate;
     }
     
     public void resetGyro(){
-        System.out.println("resetting gyro");
         gyro.reset();
-        gyroOffset = 0;
     }
-    
-    public void resetOffset(){
-        gyroOffset = getAngle();
-    }
-    
-    public void changeOffset(double delta){
-        gyroOffset += delta;
-    }
-    
-    public void setOffset(double angle){
-        gyroOffset = 0;
-    }
-    
+
     private void onBuild() {
-        this.leftEncoder.start();
-        this.rightEncoder.start();
+        new Thread(this).start();
     }
 
     private static class Builder {
@@ -202,9 +215,9 @@ public class Drive {
             drive.ptoShifter = new Solenoid(port);
             return this;
         }
-        
+
         public Builder leftEncoder(int a, int b) {
-            drive.leftEncoder = new Encoder(a,b);
+            drive.leftEncoder = new Encoder(a, b);
             drive.leftEncoder.setReverseDirection(true);
             return this;
         }
@@ -214,12 +227,12 @@ public class Drive {
             drive.rightEncoder.setReverseDirection(true);
             return this;
         }
-        
-        public Builder gyro(int port){
+
+        public Builder gyro(int port) {
             drive.gyro = new Gyro(port);
             return this;
         }
-        
+
         public Drive build() {
             drive.onBuild();
             return drive;

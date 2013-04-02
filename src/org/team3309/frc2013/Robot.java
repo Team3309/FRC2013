@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.Compressor;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -58,7 +59,6 @@ public class Robot extends IterativeRobot {
     }
 
     public void disabledPeriodic() {
-        SmartDashboard.putNumber("Gyro", mDrive.getAngularRateOfChange());
     }
 
     public void autonomousInit() {
@@ -71,7 +71,7 @@ public class Robot extends IterativeRobot {
         mDrive.stop();
         mDrive.disengagePto();
 
-        //((Command) autonChooser.getSelected()).start();
+        ((Command) autonChooser.getSelected()).start();
     }
 
     /**
@@ -79,7 +79,6 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         scheduler.run();
-        mDrive.drive(0, .5);
     }
 
     public void teleopInit() {
@@ -150,6 +149,7 @@ public class Robot extends IterativeRobot {
 
             if (driveXbox.getAButton()) {
                 mDrive.resetGyro();
+                mDrive.resetEncoders();
             }
         }
 

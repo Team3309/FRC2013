@@ -6,6 +6,7 @@ package org.team3309.frc2013.commands;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
+import org.team3309.frc2013.Drive;
 import org.team3309.frc2013.Robot;
 import org.team3309.frc2013.Shooter;
 
@@ -19,9 +20,12 @@ public class ShootAuton extends Command {
     private Shooter mShooter = Shooter.getInstance();
     private int frisbeesShot = 0;
     private double autonStartTime = 0;
+    private Drive mDrive = null;
+    private boolean hasDriven = false;
 
     public ShootAuton(Robot r) {
         this.robot = r;
+        mDrive = Drive.getInstance();
     }
 
     protected void initialize() {
@@ -45,6 +49,15 @@ public class ShootAuton extends Command {
         } else if (Timer.getFPGATimestamp() - autonStartTime > 7 && frisbeesShot == 0) {
             mShooter.shoot();
             Timer.delay(2);
+        }
+        
+        if(frisbeesShot <= 3 || hasDriven)
+            mDrive.drive(0,0);
+        else if(!hasDriven){
+            mDrive.drive(-1, 0);
+            Timer.delay(2);
+            mDrive.stop();
+            hasDriven = true;
         }
     }
 

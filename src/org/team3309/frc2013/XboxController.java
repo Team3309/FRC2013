@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj.Joystick;
 public class XboxController extends GenericHID{
     
     private static final double DEADBAND = .1;
+    private static final double DEADBAND_CUBED = .001;
 
     /*
      * Xbox 360 Controller Mapping - Vincente
@@ -191,6 +192,6 @@ public class XboxController extends GenericHID{
         if(Math.abs(val) < DEADBAND)
             return 0;
         else
-            return val*val*val;
+            return (val*val*val) - DEADBAND_CUBED;
     }
 }

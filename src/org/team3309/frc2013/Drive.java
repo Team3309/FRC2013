@@ -4,10 +4,11 @@
  */
 package org.team3309.frc2013;
 
+import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Gyro;
+import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -36,11 +37,8 @@ public class Drive implements Runnable {
         return instance;
     }
     
-    private double lastTheta = 0;
-    private double lastTime = 0;
-
     public void run() {
-        lastTime = Timer.getFPGATimestamp();
+        /*lastTime = Timer.getFPGATimestamp();
         lastTheta = getAngle();
         while (true) {
             double theta = getAngle();
@@ -52,8 +50,18 @@ public class Drive implements Runnable {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
+        }*/
+        while(true){
+            SmartDashboard.putNumber("gyro voltage", gyro.getVoltage());
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
         }
     }
+    
+    //private PIDController pid = new PIDController(.03, 0,0,null, null);
 
     private Victor left1 = null;
     private Victor left2 = null;
@@ -64,16 +72,14 @@ public class Drive implements Runnable {
     private Encoder leftEncoder = null;
     private Counter rightEncoder = null;
     
-    private Gyro gyro = null;
-    private double gyroKp = 0.03;
-    private double gyroOffset = 0;
-    private double angularRate = 0;
-    private static final double MAX_ANGULAR_RATE_OF_CHANGE = 180; //180 deg/s
+    
+    private AnalogChannel gyro = null;
+    private double gyroKp = 0.02;
+    private double gyroVoltageOffset = 2.5;
+    private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick
     
     private double skimGain = .25;
     
-    
-
     double skim(double v) {
         // gain determines how much to skim off the top
         if (v > 1.0) {
@@ -100,23 +106,33 @@ public class Drive implements Runnable {
         setLeft(-left);
         setRight(right);
     }*/
-
+    
     public void drive(double throttle, double turn) {
-        turn = -turn;
+        if(Math.abs(throttle) < .1 && Math.abs(turn) < .1){ //do nothing when there is no driving commands - do this to prevent the waggle - James
+            setLeft(0);
+            setRight(0);
+            return;
+        }
         
         double omega = getAngularRateOfChange();
         double desiredOmega = turn*MAX_ANGULAR_RATE_OF_CHANGE;
         
-        double turnOutput = (omega - desiredOmega) * gyroKp;
+        SmartDashboard.putNumber("desired omega", desiredOmega);
+        
+        turn = (omega - desiredOmega) * gyroKp;
+        SmartDashboard.putNumber("turn output", turn);
         
         SmartDashboard.putNumber("Gyro", getAngularRateOfChange());
 
-        double t_left = throttle + turnOutput;
-        double t_right = throttle - turnOutput;
+        double t_left = throttle + turn;
+        double t_right = throttle - turn;
 
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
 
+        SmartDashboard.putNumber("left", -left);
+        SmartDashboard.putNumber("right", right);
+        
         setLeft(-left);
         setRight(right);
     }
@@ -162,18 +178,16 @@ public class Drive implements Runnable {
         return leftEncoder;
     }
 
-    public double getAngle(){
-        return gyro.getAngle();
-    }
-    
     public double getAngularRateOfChange(){
-        return angularRate;
+        double rate = (gyro.getVoltage() - gyroVoltageOffset) / .007; //7mV per degree per sec
+        return rate;
+        //return Math.abs(rate) < 2 ? 0 : rate; //if the gyro rate is less than 2 degrees per second, return 0
     }
     
     public void resetGyro(){
-        gyro.reset();
+        gyroVoltageOffset = gyro.getVoltage();
     }
-
+    
     private void onBuild() {
         new Thread(this).start();
     }
@@ -229,7 +243,7 @@ public class Drive implements Runnable {
         }
 
         public Builder gyro(int port) {
-            drive.gyro = new Gyro(port);
+            drive.gyro = new AnalogChannel(port);
             return this;
         }
 

@@ -64,7 +64,7 @@ public class Robot extends IterativeRobot {
 
     public void autonomousInit() {
         mDrive.resetGyro();
-        
+
         mClimber.unlock();
         mShooter.tiltDown();
         mClimber.retractTipper();
@@ -72,7 +72,7 @@ public class Robot extends IterativeRobot {
         mDrive.stop();
         mDrive.disengagePto();
 
-        ((Command) autonChooser.getSelected()).start();
+        //((Command) autonChooser.getSelected()).start();
     }
 
     /**
@@ -80,11 +80,12 @@ public class Robot extends IterativeRobot {
      */
     public void autonomousPeriodic() {
         scheduler.run();
+        mDrive.drive(0, .5);
     }
 
     public void teleopInit() {
         mDrive.resetGyro();
-        
+
         mClimber.unlock();
         mShooter.tiltDown();
         mClimber.retractTipper();
@@ -97,6 +98,7 @@ public class Robot extends IterativeRobot {
     //this stuff copied from http://chiefdelphi.com/forums/showpost.php?p=1212189&postcount=3
     private double speed = 0; //use this for ramping the speed to make smoother control
     private static final double MAX_SPEED_CHANGE = 0.05; //use this for ramping the speed to make smoother control
+    private boolean climbLineUpMode = false;
 
     /**
      * This function is called periodically during operator control
@@ -119,7 +121,7 @@ public class Robot extends IterativeRobot {
         if (!climbingMode) {
 
             double throttle = driveXbox.getLeftY();
-            double turn = driveXbox.getRightX();
+            double turn = driveXbox.getRightX() + operatorXbox.getLeftX()*.25;
 
             if (throttle > (speed + MAX_SPEED_CHANGE)) {
                 speed = speed + MAX_SPEED_CHANGE;
@@ -137,13 +139,18 @@ public class Robot extends IterativeRobot {
                 compressor.start();
             }
 
-
-            if (!driveXbox.getLeftBumper()) {
-                mDrive.drive(speed, turn);
+            if (driveXbox.getLeftBumper()) {
+                climbLineUpMode = true;
+            } else if (driveXbox.getRightBumper()) {
+                climbLineUpMode = false;
             }
-            if (driveXbox.getLeftBumper()) //invert controls so that lining up for a climb is easier
-            {
-                mDrive.drive(-speed, turn);
+            if(climbLineUpMode)
+                mDrive.drive(throttle, turn*.25);
+            else
+                mDrive.drive(throttle, turn);
+
+            if (driveXbox.getAButton()) {
+                mDrive.resetGyro();
             }
         }
 
@@ -165,6 +172,7 @@ public class Robot extends IterativeRobot {
             target = 8000;
         }
         if (operatorXbox.getRightBumper()) {
+            mDrive.stop();
             if (mShooter.isTargetSpeed()) {
                 mShooter.shoot();
                 Timer.delay(.5);

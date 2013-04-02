@@ -63,6 +63,8 @@ public class Robot extends IterativeRobot {
 
     public void autonomousInit() {
         mDrive.resetGyro();
+        mDrive.enablePid();
+        mDrive.disablePid();
 
         mClimber.unlock();
         mShooter.tiltDown();
@@ -83,6 +85,7 @@ public class Robot extends IterativeRobot {
 
     public void teleopInit() {
         mDrive.resetGyro();
+        mDrive.disablePid();
 
         mClimber.unlock();
         mShooter.tiltDown();
@@ -117,7 +120,6 @@ public class Robot extends IterativeRobot {
         }
 
         if (!climbingMode) {
-
             double throttle = driveXbox.getLeftY();
             double turn = driveXbox.getRightX() + operatorXbox.getLeftX()*.25;
 
@@ -146,6 +148,11 @@ public class Robot extends IterativeRobot {
                 mDrive.drive(throttle, turn*.25);
             else
                 mDrive.drive(throttle, turn);
+            
+            if(driveXbox.getLeftStickPressed())
+                mDrive.disableGyro();
+            else if(driveXbox.getRightStickPressed())
+                mDrive.enableGyro();
 
             if (driveXbox.getAButton()) {
                 mDrive.resetGyro();

@@ -37,9 +37,9 @@ public class Drive implements Runnable {
         }
         return instance;
     }
-    
+
     public void run() {
-        while(true){
+        while (true) {
             SmartDashboard.putNumber("Left encoder", leftEncoder.get());
             SmartDashboard.putNumber("Right encoder", rightEncoder.get());
             SmartDashboard.putNumber("Gyro", gyro.getAngularRateOfChange());
@@ -50,7 +50,7 @@ public class Drive implements Runnable {
             }
         }
     }
-    
+
     private class StraightPID implements PIDSource, PIDOutput {
 
         public double pidGet() {
@@ -58,11 +58,9 @@ public class Drive implements Runnable {
         }
 
         public void pidWrite(double d) {
-            drive(d, 0);
+            //drive(d, 0);
         }
-        
     }
-    
     private Victor left1 = null;
     private Victor left2 = null;
     private Victor right1 = null;
@@ -74,18 +72,20 @@ public class Drive implements Runnable {
     
     private PIDController straightPid = null;
     
-    private static final double KP_LOW_GEAR = .01;
+    
+    private boolean gyroEnabled = true;
+    private static final double KP_LOW_GEAR = .001;
     private static final double KP_STOPPED = .01;
     private static final double KP_LOW_SPEED = .03;
     private static final double KP_DEFAULT = .02;
     private double gyroKp = KP_DEFAULT;
     
+    private boolean isLowGear = false;
+    
     private SuperGyro gyro;
-    
     private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick - in deg/s
-    
     private double skimGain = .25;
-    
+
     double skim(double v) {
         // gain determines how much to skim off the top
         if (v > 1.0) {
@@ -95,22 +95,30 @@ public class Drive implements Runnable {
         }
         return 0;
     }
-    
+
     public void drive(double throttle, double turn) {
         throttle = -throttle; //flip throttle so that a positive value will make the robot drive forward
-        
-        if(Math.abs(throttle) < .1 && Math.abs(turn) < .1) //do nothing when there is no driving commands - do this to prevent the waggle - James
-            gyroKp = KP_STOPPED;
-        else if(Math.abs(throttle) < .5)
-            gyroKp = KP_LOW_SPEED;
+
+        if (gyroEnabled) {
+            if (Math.abs(throttle) < .1 && Math.abs(turn) < .1) //do nothing when there is no driving commands - do this to prevent the waggle - James
+            {
+                gyroKp = KP_STOPPED;
+            } else if (Math.abs(throttle) < .5) {
+                gyroKp = KP_LOW_SPEED;
+            } if(isLowGear){
+                gyroKp = KP_LOW_GEAR;
+            } else {
+                gyroKp = KP_DEFAULT;
+            }
+
+            double omega = gyro.getAngularRateOfChange();
+            double desiredOmega = turn * MAX_ANGULAR_RATE_OF_CHANGE;
+
+            turn = (omega - desiredOmega) * gyroKp;
+        }
         else
-            gyroKp = KP_DEFAULT;
-        
-        double omega = gyro.getAngularRateOfChange();
-        double desiredOmega = turn*MAX_ANGULAR_RATE_OF_CHANGE;
-        
-        turn = (omega - desiredOmega) * gyroKp;
-        
+            turn = -turn;
+
         double t_left = throttle + turn;
         double t_right = throttle - turn;
 
@@ -124,11 +132,13 @@ public class Drive implements Runnable {
     public void highGear() {
         driveShifter.set(DoubleSolenoid.Value.kReverse);
         gyroKp = KP_DEFAULT;
+        isLowGear = false;
     }
 
     public void lowGear() {
         driveShifter.set(DoubleSolenoid.Value.kForward);
         gyroKp = KP_LOW_GEAR;
+        isLowGear = true;
     }
 
     public void engagePto() {
@@ -160,34 +170,48 @@ public class Drive implements Runnable {
         setLeft(val);
     }
 
-    public void resetGyro(){
+    public void resetGyro() {
         gyro.reset();
     }
-    
-    public void resetEncoders(){
+
+    public void resetEncoders() {
         leftEncoder.reset();
         rightEncoder.reset();
     }
-    
-    public void disablePid(){
+
+    public void disablePid() {
         straightPid.disable();
     }
-    
-    public void driveStraight(int counts){
+
+    public void enablePid() {
+        straightPid.enable();
+    }
+
+    public void driveStraight(int counts) {
         straightPid.setSetpoint(counts);
     }
     
+    public void enableGyro(){
+        gyroEnabled = true;
+        System.out.println("gyro enabled");
+    }
+    
+    public void disableGyro(){
+        gyroEnabled = false;
+        System.out.println("gyro disabled");
+    }
+
     private void onBuild() {
         leftEncoder.start();
         rightEncoder.start();
-        
+
         StraightPID straight = new StraightPID();
         straightPid = new PIDController(0.001, 0, 0.02, straight, straight);
-        
+
         SmartDashboard.putData("Straight PID", straightPid);
-        
+
         straightPid.enable();
-        
+
         new Thread(this).start();
     }
 

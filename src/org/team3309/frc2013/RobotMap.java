@@ -17,10 +17,10 @@ public class RobotMap {
     public static final int DRIVE_LEFT_2    = 2;
     public static final int DRIVE_RIGHT_1   = 3;
     public static final int DRIVE_RIGHT_2   = 4;
-    public static final int DRIVE_ENCODER_LEFT_A    = 12;
-    public static final int DRIVE_ENCODER_LEFT_B    = 13;
+    public static final int DRIVE_ENCODER_LEFT_A    = 2;
+    public static final int DRIVE_ENCODER_LEFT_B    = 10;
     public static final int DRIVE_ENCODER_RIGHT_A   = 1;
-    public static final int DRIVE_ENCODER_RIGHT_B   = 2;
+    public static final int DRIVE_ENCODER_RIGHT_B   = 11;
     public static final int DRIVE_GYRO  = 1;
     
     public static final int DRIVE_SHIFTER_FORWARD       = 7;

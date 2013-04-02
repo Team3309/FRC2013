@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.AnalogChannel;
 import edu.wpi.first.wpilibj.Counter;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -61,8 +60,6 @@ public class Drive implements Runnable {
         }
     }
     
-    //private PIDController pid = new PIDController(.03, 0,0,null, null);
-
     private Victor left1 = null;
     private Victor left2 = null;
     private Victor right1 = null;
@@ -73,8 +70,13 @@ public class Drive implements Runnable {
     private Counter rightEncoder = null;
     
     
+    private static final double KP_LOW_GEAR = .01;
+    private static final double KP_STOPPED = .01;
+    private static final double KP_LOW_SPEED = .03;
+    private static final double KP_DEFAULT = .02;
+    private double gyroKp = KP_DEFAULT;
+    
     private AnalogChannel gyro = null;
-    private double gyroKp = 0.02;
     private double gyroVoltageOffset = 2.5;
     private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick
     
@@ -89,30 +91,14 @@ public class Drive implements Runnable {
         }
         return 0;
     }
-
-    /*public void driveStraight(double throttle) {
-        System.out.println("attempting to drive straight");
-        double turn = getAngle() * gyroKp;
-        SmartDashboard.putNumber("gyro compensation", turn);
-
-        SmartDashboard.putNumber("Gyro", getAngle());
-
-        double t_left = throttle + turn;
-        double t_right = throttle - turn;
-
-        double left = t_left + skim(t_right);
-        double right = t_right + skim(t_left);
-
-        setLeft(-left);
-        setRight(right);
-    }*/
     
     public void drive(double throttle, double turn) {
-        if(Math.abs(throttle) < .1 && Math.abs(turn) < .1){ //do nothing when there is no driving commands - do this to prevent the waggle - James
-            setLeft(0);
-            setRight(0);
-            return;
-        }
+        if(Math.abs(throttle) < .1 && Math.abs(turn) < .1) //do nothing when there is no driving commands - do this to prevent the waggle - James
+            gyroKp = KP_STOPPED;
+        else if(Math.abs(throttle) < .5)
+            gyroKp = KP_LOW_SPEED;
+        else
+            gyroKp = KP_DEFAULT;
         
         double omega = getAngularRateOfChange();
         double desiredOmega = turn*MAX_ANGULAR_RATE_OF_CHANGE;
@@ -139,10 +125,12 @@ public class Drive implements Runnable {
 
     public void highGear() {
         driveShifter.set(DoubleSolenoid.Value.kReverse);
+        gyroKp = KP_DEFAULT;
     }
 
     public void lowGear() {
         driveShifter.set(DoubleSolenoid.Value.kForward);
+        gyroKp = KP_LOW_GEAR;
     }
 
     public void engagePto() {

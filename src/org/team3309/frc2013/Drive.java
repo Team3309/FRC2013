@@ -74,7 +74,6 @@ public class Drive implements Runnable {
     
     private PIDController straightPid = null;
     
-    
     private static final double KP_LOW_GEAR = .01;
     private static final double KP_STOPPED = .01;
     private static final double KP_LOW_SPEED = .03;
@@ -183,7 +182,7 @@ public class Drive implements Runnable {
         rightEncoder.start();
         
         StraightPID straight = new StraightPID();
-        straightPid = new PIDController(0.001,0,0.02, straight, straight);
+        straightPid = new PIDController(0.001, 0, 0.02, straight, straight);
         
         SmartDashboard.putData("Straight PID", straightPid);
         

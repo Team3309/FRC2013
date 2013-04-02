@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  *
  * @author vmagr_000
  */
-public class Climber implements Runnable, PIDSource, PIDOutput {
+public class Climber implements Runnable {
 
     private static Climber instance = null;
 
@@ -28,6 +28,7 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
         }
         return instance;
     }
+    
     private DoubleSolenoid tipper = null;
     private Solenoid lock = null;
     private Victor dumper = null;
@@ -38,12 +39,6 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
     private boolean bottomLimitHit = false;
     private boolean inClimbMode = false;
     
-    private Encoder encoder;
-    
-    private PIDController pid = null;
-    
-    private boolean lastSignPositive = false;
-
     private Climber(int tipperForward, int tipperReverse, int dumper, int topLimit, int bottomLimit, int lock) {
         drive = Drive.getInstance();
         this.tipper = new DoubleSolenoid(tipperForward, tipperReverse);
@@ -52,12 +47,7 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
         this.bottomLimit = new DigitalInput(bottomLimit);
         this.lock = new Solenoid(lock);
         
-        this.encoder = drive.getPtoEncoder();
-        this.encoder.reset();
         new Thread(this).start();
-        
-        pid = new PIDController(0.001,0,0, this, this);
-        SmartDashboard.putData("climberPid", pid);
     }
 
     public void tip() {
@@ -74,8 +64,6 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
 
     public void enableClimbingMode() {
         inClimbMode = true;
-        encoder.reset();
-        encoder.start();
         unlock();
     }
 
@@ -94,10 +82,6 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
             else
                 drive.setPto(power);
             
-            if(!lastSignPositive){
-                //countAtLastDirection = encoder.get();
-            }
-            lastSignPositive = true;
         }
         
         if(power < 0){
@@ -151,11 +135,4 @@ public class Climber implements Runnable, PIDSource, PIDOutput {
         }
     }
 
-    public double pidGet() {
-        return encoder.get();
-    }
-
-    public void pidWrite(double d) {
-        runTraveller(d);
-    }
 }

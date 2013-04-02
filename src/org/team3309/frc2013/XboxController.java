@@ -116,7 +116,7 @@ public class XboxController extends GenericHID{
 
     public double getLeftY() {
         double val = mController.getRawAxis(A_LEFT_Y);
-        return scaleAxis(val);
+        return -scaleAxis(val);
     }
 
     public double getRightX() {
@@ -126,7 +126,7 @@ public class XboxController extends GenericHID{
 
     public double getRightY() {
         double val = mController.getRawAxis(A_RIGHT_Y);
-        return scaleAxis(val);
+        return -scaleAxis(val);
     }
 
     public double getRightTrigger() {

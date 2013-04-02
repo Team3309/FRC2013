@@ -28,7 +28,7 @@ public class Drive implements Runnable {
                     .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
                     .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
                     .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
-                    .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
+                    .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A)
                     .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
                     .gyro(RobotMap.DRIVE_GYRO)
                     .build();
@@ -37,21 +37,9 @@ public class Drive implements Runnable {
     }
     
     public void run() {
-        /*lastTime = Timer.getFPGATimestamp();
-        lastTheta = getAngle();
-        while (true) {
-            double theta = getAngle();
-            angularRate = (theta - lastTheta)/(Timer.getFPGATimestamp() - lastTime);
-            lastTime = Timer.getFPGATimestamp();
-            lastTheta = theta;
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-        }*/
         while(true){
-            SmartDashboard.putNumber("gyro voltage", gyro.getVoltage());
+            SmartDashboard.putNumber("Left encoder", leftEncoder.get());
+            SmartDashboard.putNumber("Right encoder", rightEncoder.get());
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ex) {
@@ -66,7 +54,7 @@ public class Drive implements Runnable {
     private Victor right2 = null;
     private DoubleSolenoid driveShifter = null;
     private Solenoid ptoShifter = null;
-    private Encoder leftEncoder = null;
+    private Counter leftEncoder = null;
     private Counter rightEncoder = null;
     
     
@@ -76,8 +64,8 @@ public class Drive implements Runnable {
     private static final double KP_DEFAULT = .02;
     private double gyroKp = KP_DEFAULT;
     
-    private AnalogChannel gyro = null;
-    private double gyroVoltageOffset = 2.5;
+    private SuperGyro gyro;
+    
     private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick
     
     private double skimGain = .25;
@@ -93,6 +81,8 @@ public class Drive implements Runnable {
     }
     
     public void drive(double throttle, double turn) {
+        throttle = -throttle; //flip throttle so that a positive value will make the robot drive forward
+        
         if(Math.abs(throttle) < .1 && Math.abs(turn) < .1) //do nothing when there is no driving commands - do this to prevent the waggle - James
             gyroKp = KP_STOPPED;
         else if(Math.abs(throttle) < .5)
@@ -100,25 +90,17 @@ public class Drive implements Runnable {
         else
             gyroKp = KP_DEFAULT;
         
-        double omega = getAngularRateOfChange();
+        double omega = gyro.getAngularRateOfChange();
         double desiredOmega = turn*MAX_ANGULAR_RATE_OF_CHANGE;
         
-        SmartDashboard.putNumber("desired omega", desiredOmega);
-        
         turn = (omega - desiredOmega) * gyroKp;
-        SmartDashboard.putNumber("turn output", turn);
         
-        SmartDashboard.putNumber("Gyro", getAngularRateOfChange());
-
         double t_left = throttle + turn;
         double t_right = throttle - turn;
 
         double left = t_left + skim(t_right);
         double right = t_right + skim(t_left);
 
-        SmartDashboard.putNumber("left", -left);
-        SmartDashboard.putNumber("right", right);
-        
         setLeft(-left);
         setRight(right);
     }
@@ -162,21 +144,13 @@ public class Drive implements Runnable {
         setLeft(val);
     }
 
-    public Encoder getPtoEncoder() {
-        return leftEncoder;
-    }
-
-    public double getAngularRateOfChange(){
-        double rate = (gyro.getVoltage() - gyroVoltageOffset) / .007; //7mV per degree per sec
-        return rate;
-        //return Math.abs(rate) < 2 ? 0 : rate; //if the gyro rate is less than 2 degrees per second, return 0
-    }
-    
     public void resetGyro(){
-        gyroVoltageOffset = gyro.getVoltage();
+        gyro.reset();
     }
     
     private void onBuild() {
+        leftEncoder.start();
+        rightEncoder.start();
         new Thread(this).start();
     }
 
@@ -218,8 +192,8 @@ public class Drive implements Runnable {
             return this;
         }
 
-        public Builder leftEncoder(int a, int b) {
-            drive.leftEncoder = new Encoder(a, b);
+        public Builder leftEncoder(int a) {
+            drive.leftEncoder = new Counter(a);
             drive.leftEncoder.setReverseDirection(true);
             return this;
         }
@@ -231,7 +205,7 @@ public class Drive implements Runnable {
         }
 
         public Builder gyro(int port) {
-            drive.gyro = new AnalogChannel(port);
+            drive.gyro = new SuperGyro(port);
             return this;
         }
 

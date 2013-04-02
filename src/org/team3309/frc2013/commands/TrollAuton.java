@@ -27,10 +27,7 @@ public class TrollAuton extends Command {
 
     protected void execute() {
         mDrive.highGear();
-        mDrive.drive(.75, 0);
-        Timer.delay(2);
-        mDrive.stop();
-        finished = true;
+        mDrive.driveStraight(-3309);
         Shooter.getInstance().setTargetRpm(0);
     }
 

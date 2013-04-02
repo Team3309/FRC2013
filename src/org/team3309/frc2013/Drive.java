@@ -4,10 +4,12 @@
  */
 package org.team3309.frc2013;
 
-import edu.wpi.first.wpilibj.AnalogChannel;
-import edu.wpi.first.wpilibj.Counter;
+import edu.wpi.first.wpilibj.CounterBase;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.PIDController;
+import edu.wpi.first.wpilibj.PIDOutput;
+import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.Victor;
@@ -28,8 +30,8 @@ public class Drive implements Runnable {
                     .right1(RobotMap.DRIVE_RIGHT_1).right2(RobotMap.DRIVE_RIGHT_2)
                     .driveShifter(RobotMap.DRIVE_SHIFTER_FORWARD, RobotMap.DRIVE_SHIFTER_REVERSE)
                     .ptoShifter(RobotMap.DRIVE_SHIFTER_ENGAGE_PTO)
-                    .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A)
-                    .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A)
+                    .leftEncoder(RobotMap.DRIVE_ENCODER_LEFT_A, RobotMap.DRIVE_ENCODER_LEFT_B)
+                    .rightEncoder(RobotMap.DRIVE_ENCODER_RIGHT_A, RobotMap.DRIVE_ENCODER_RIGHT_B)
                     .gyro(RobotMap.DRIVE_GYRO)
                     .build();
         }
@@ -40,6 +42,7 @@ public class Drive implements Runnable {
         while(true){
             SmartDashboard.putNumber("Left encoder", leftEncoder.get());
             SmartDashboard.putNumber("Right encoder", rightEncoder.get());
+            SmartDashboard.putNumber("Gyro", gyro.getAngularRateOfChange());
             try {
                 Thread.sleep(50);
             } catch (InterruptedException ex) {
@@ -48,14 +51,28 @@ public class Drive implements Runnable {
         }
     }
     
+    private class StraightPID implements PIDSource, PIDOutput {
+
+        public double pidGet() {
+            return (leftEncoder.get() + rightEncoder.get()) / 2;
+        }
+
+        public void pidWrite(double d) {
+            drive(d, 0);
+        }
+        
+    }
+    
     private Victor left1 = null;
     private Victor left2 = null;
     private Victor right1 = null;
     private Victor right2 = null;
     private DoubleSolenoid driveShifter = null;
     private Solenoid ptoShifter = null;
-    private Counter leftEncoder = null;
-    private Counter rightEncoder = null;
+    private Encoder leftEncoder = null;
+    private Encoder rightEncoder = null;
+    
+    private PIDController straightPid = null;
     
     
     private static final double KP_LOW_GEAR = .01;
@@ -66,7 +83,7 @@ public class Drive implements Runnable {
     
     private SuperGyro gyro;
     
-    private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick
+    private static final double MAX_ANGULAR_RATE_OF_CHANGE = 720; //max turning speed commandable by the joystick - in deg/s
     
     private double skimGain = .25;
     
@@ -148,9 +165,30 @@ public class Drive implements Runnable {
         gyro.reset();
     }
     
+    public void resetEncoders(){
+        leftEncoder.reset();
+        rightEncoder.reset();
+    }
+    
+    public void disablePid(){
+        straightPid.disable();
+    }
+    
+    public void driveStraight(int counts){
+        straightPid.setSetpoint(counts);
+    }
+    
     private void onBuild() {
         leftEncoder.start();
         rightEncoder.start();
+        
+        StraightPID straight = new StraightPID();
+        straightPid = new PIDController(0.001,0,0.02, straight, straight);
+        
+        SmartDashboard.putData("Straight PID", straightPid);
+        
+        straightPid.enable();
+        
         new Thread(this).start();
     }
 
@@ -192,15 +230,13 @@ public class Drive implements Runnable {
             return this;
         }
 
-        public Builder leftEncoder(int a) {
-            drive.leftEncoder = new Counter(a);
-            drive.leftEncoder.setReverseDirection(true);
+        public Builder leftEncoder(int a, int b) {
+            drive.leftEncoder = new Encoder(a, b, true, CounterBase.EncodingType.k1X);
             return this;
         }
 
-        public Builder rightEncoder(int a) {
-            drive.rightEncoder = new Counter(a);
-            drive.rightEncoder.setReverseDirection(true);
+        public Builder rightEncoder(int a, int b) {
+            drive.rightEncoder = new Encoder(a, b, false, CounterBase.EncodingType.k1X);
             return this;
         }
 

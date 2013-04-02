@@ -134,7 +134,6 @@ public class Shooter implements Runnable {
                     motor.set(0);
                 
                 SmartDashboard.putNumber("shooter rpm", speed);
-                SmartDashboard.putNumber("shooter counts", cntr.get());
                 
                 Thread.sleep(20);
             } catch (InterruptedException ex) {

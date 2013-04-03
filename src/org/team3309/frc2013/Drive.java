@@ -50,6 +50,8 @@ public class Drive implements Runnable {
             }
         }
     }
+    
+    private boolean straightPidEnabled = false;
 
     private class StraightPID implements PIDSource, PIDOutput {
 
@@ -58,7 +60,9 @@ public class Drive implements Runnable {
         }
 
         public void pidWrite(double d) {
-            //drive(d, 0);
+            if(straightPidEnabled){
+                drive(d, 0);
+            }
         }
     }
     private Victor left1 = null;
@@ -181,10 +185,12 @@ public class Drive implements Runnable {
 
     public void disablePid() {
         straightPid.disable();
+        straightPidEnabled = false;
     }
 
     public void enablePid() {
         straightPid.enable();
+        straightPidEnabled = true;
     }
 
     public void driveStraight(int counts) {

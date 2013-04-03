@@ -64,7 +64,6 @@ public class Robot extends IterativeRobot {
     public void autonomousInit() {
         mDrive.resetGyro();
         mDrive.enablePid();
-        mDrive.disablePid();
 
         mClimber.unlock();
         mShooter.tiltDown();

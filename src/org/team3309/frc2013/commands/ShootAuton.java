@@ -19,9 +19,7 @@ public class ShootAuton extends Command {
     private Robot robot = null;
     private Shooter mShooter = Shooter.getInstance();
     private int frisbeesShot = 0;
-    private double autonStartTime = 0;
     private Drive mDrive = null;
-    private boolean hasDriven = false;
 
     public ShootAuton(Robot r) {
         this.robot = r;
@@ -29,35 +27,32 @@ public class ShootAuton extends Command {
     }
 
     protected void initialize() {
-        autonStartTime = Timer.getFPGATimestamp();
     }
 
     protected void execute() {
-        mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
-        while (!mShooter.isTargetSpeed()) {
+        if(frisbeesShot <= 3)
+            mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
+        while (frisbeesShot <= 3 && !mShooter.isTargetSpeed()) {
             Timer.delay(.1);
             if (!robot.isAutonomous()) {
                 return;
             }
         }
         if (mShooter.isTargetSpeed() && frisbeesShot <= 3) {
+            mDrive.stop();
             mShooter.extendLoader();
-            Timer.delay(2);
+            Timer.delay(1);
             mShooter.retractLoader();
             Timer.delay(.5);
             frisbeesShot++;
-        } else if (Timer.getFPGATimestamp() - autonStartTime > 7 && frisbeesShot == 0) {
-            mShooter.shoot();
-            Timer.delay(2);
         }
         
-        if(frisbeesShot <= 3 || hasDriven)
-            mDrive.drive(0,0);
-        else if(!hasDriven){
-            mDrive.drive(-1, 0);
-            Timer.delay(2);
-            mDrive.stop();
-            hasDriven = true;
+        System.out.println("frisbees shot: "+frisbeesShot);
+        
+        if(frisbeesShot > 3){
+            mDrive.enablePid();
+            mDrive.driveStraight(-3000);
+            mShooter.setTargetRpm(0);
         }
     }
 

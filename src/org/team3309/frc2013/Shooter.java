@@ -27,8 +27,6 @@ public class Shooter implements Runnable {
     private double lastSpeed = 0;
     private double targetRpm = 0;
     
-    public static final double MAX_RPM = 4000;
-    
     private static Shooter instance;
     
     public static Shooter getInstance(){
@@ -85,7 +83,7 @@ public class Shooter implements Runnable {
      * @return 
      */
     public boolean isTargetSpeed(){
-        return Math.abs(speed - targetRpm) < 50;
+        return Math.abs(speed - targetRpm) < 100;
     }
     
     public void shoot(){

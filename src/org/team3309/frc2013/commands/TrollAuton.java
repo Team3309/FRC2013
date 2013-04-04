@@ -4,7 +4,6 @@
  */
 package org.team3309.frc2013.commands;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 import org.team3309.frc2013.Drive;
 import org.team3309.frc2013.Shooter;

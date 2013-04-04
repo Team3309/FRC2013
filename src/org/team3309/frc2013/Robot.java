@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import org.team3309.frc2013.commands.ExtendRetractLoader;
+import org.team3309.frc2013.commands.FakeCommand;
 import org.team3309.frc2013.commands.ShootAuton;
 import org.team3309.frc2013.commands.TrollAuton;
 
@@ -49,8 +50,10 @@ public class Robot extends IterativeRobot {
         compressor.start();
 
 
-        autonChooser.addDefault("Shoot", new ShootAuton(this));
+        autonChooser.addDefault("Shoot", new ShootAuton(this, false));
+        autonChooser.addObject("Shoot and drive back", new ShootAuton(this, true));
         autonChooser.addObject("Troll", new TrollAuton());
+        autonChooser.addObject("Do nothing", new FakeCommand());
         SmartDashboard.putData("Autonomous Chooser", autonChooser);
     }
 

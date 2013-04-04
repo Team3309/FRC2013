@@ -20,14 +20,17 @@ public class ShootAuton extends Command {
     private Shooter mShooter = Shooter.getInstance();
     private int frisbeesShot = 0;
     private Drive mDrive = null;
+    private boolean driveBack = false;
 
-    public ShootAuton(Robot r) {
+    public ShootAuton(Robot r, boolean driveBack) {
         this.robot = r;
         mDrive = Drive.getInstance();
+        this.driveBack = driveBack;
     }
 
     protected void initialize() {
         frisbeesShot = 0;
+        mShooter.tiltUp();
     }
 
     protected void execute() {
@@ -50,7 +53,7 @@ public class ShootAuton extends Command {
         
         System.out.println("frisbees shot: "+frisbeesShot);
         
-        if(frisbeesShot > 3){
+        if(driveBack && frisbeesShot > 3){
             mDrive.enablePid();
             mDrive.driveStraight(-3000);
             mShooter.setTargetRpm(0);

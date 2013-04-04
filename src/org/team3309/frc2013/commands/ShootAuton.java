@@ -27,6 +27,7 @@ public class ShootAuton extends Command {
     }
 
     protected void initialize() {
+        frisbeesShot = 0;
     }
 
     protected void execute() {

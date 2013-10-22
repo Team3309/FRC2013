@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class Shooter implements Runnable {
     
-    public static final int PYRAMID_TARGET_RPM = 3500;
+    public static final int PYRAMID_TARGET_RPM = 3700;
 
     private Victor motor = null;
     private Solenoid loaderPiston = null;
@@ -83,12 +83,12 @@ public class Shooter implements Runnable {
      * @return 
      */
     public boolean isTargetSpeed(){
-        return Math.abs(speed - targetRpm) < 100;
+        return Math.abs(speed - targetRpm) < 90;
     }
     
     public void shoot(){
         extendLoader();
-        Timer.delay(.5);
+        Timer.delay(.3);
         retractLoader();
     }
     

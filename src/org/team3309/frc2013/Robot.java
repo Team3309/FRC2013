@@ -50,8 +50,7 @@ public class Robot extends IterativeRobot {
         compressor.start();
 
 
-        autonChooser.addDefault("Shoot", new ShootAuton(this, false));
-        autonChooser.addObject("Shoot and drive back", new ShootAuton(this, true));
+        autonChooser.addDefault("Shoot", new ShootAuton(this));
         autonChooser.addObject("Troll", new TrollAuton());
         autonChooser.addObject("Do nothing", new FakeCommand());
         SmartDashboard.putData("Autonomous Chooser", autonChooser);
@@ -92,7 +91,7 @@ public class Robot extends IterativeRobot {
         mDrive.disablePid();
 
         mClimber.unlock();
-        mShooter.tiltDown();
+        mShooter.tiltUp();
         mClimber.retractTipper();
         mClimber.disableClimbingMode();
         mDrive.highGear();
@@ -165,7 +164,7 @@ public class Robot extends IterativeRobot {
         }
 
         if (climbingMode) {
-            mClimber.runTraveller(-driveXbox.getLeftY());
+            mClimber.runTraveller(driveXbox.getLeftY());
             if (driveXbox.getLeftBumper()) {
                 mClimber.unlock();
             } else if (driveXbox.getRightBumper()) {
@@ -208,7 +207,7 @@ public class Robot extends IterativeRobot {
             mClimber.retractTipper();
         }
 
-        mClimber.setDumper(operatorXbox.getRightY());
+        mClimber.setDumper(-operatorXbox.getRightY());
     }
 
     /**

@@ -10,7 +10,7 @@ package org.team3309.frc2013;
  */
 public class RobotMap {
     
-    private static final boolean isCompBot = true;
+    private static final boolean isCompBot = false;
     
     static{
         System.out.println("Competition robot status: "+isCompBot);

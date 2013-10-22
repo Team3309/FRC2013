@@ -18,46 +18,33 @@ public class ShootAuton extends Command {
 
     private Robot robot = null;
     private Shooter mShooter = Shooter.getInstance();
-    private int frisbeesShot = 0;
     private Drive mDrive = null;
-    private boolean driveBack = false;
 
-    public ShootAuton(Robot r, boolean driveBack) {
+    public ShootAuton(Robot r) {
         this.robot = r;
         mDrive = Drive.getInstance();
-        this.driveBack = driveBack;
     }
 
     protected void initialize() {
-        frisbeesShot = 0;
         mShooter.tiltUp();
+        mDrive.stop();
+        
+        mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
+        Timer.delay(3);
     }
 
     protected void execute() {
-        if(frisbeesShot <= 3)
-            mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
-        while (frisbeesShot <= 3 && !mShooter.isTargetSpeed()) {
-            Timer.delay(.1);
+        mShooter.setTargetRpm(Shooter.PYRAMID_TARGET_RPM);
+        while (!mShooter.isTargetSpeed()) {
             if (!robot.isAutonomous()) {
                 return;
             }
         }
-        if (mShooter.isTargetSpeed() && frisbeesShot <= 3) {
-            mDrive.stop();
-            mShooter.extendLoader();
-            Timer.delay(1);
-            mShooter.retractLoader();
-            Timer.delay(.5);
-            frisbeesShot++;
+        if (mShooter.isTargetSpeed()) {
+            mShooter.shoot();
+            Timer.delay(2);
         }
         
-        System.out.println("frisbees shot: "+frisbeesShot);
-        
-        if(driveBack && frisbeesShot > 3){
-            mDrive.enablePid();
-            mDrive.driveStraight(-3000);
-            mShooter.setTargetRpm(0);
-        }
     }
 
     protected boolean isFinished() {

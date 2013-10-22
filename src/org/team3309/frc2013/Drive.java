@@ -161,11 +161,15 @@ public class Drive implements Runnable {
     }
 
     private void setLeft(double val) {
+        if(Math.abs(val) < .05)
+            return;
         left1.set(val);
         left2.set(val);
     }
 
     private void setRight(double val) {
+        if(Math.abs(val) < .05)
+            return;
         right1.set(val);
         right2.set(val);
     }
